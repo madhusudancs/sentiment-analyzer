@@ -53,7 +53,12 @@ class UTF8Recoder(object):
 
 
 def parse_json_files(directory):
-    """Function that walks through the directory of JSON files containing tweets
+    """Walk through the directory of JSON files containing tweets.
+
+    Args:
+      directory: The path to the directory that contains only JSON files and
+         each JSON file corresponds to a single tweet along with all the
+         meta-data corresponding to that tweet.
     """
     data_dir_params = list(os.walk(directory))
     base_dir = data_dir_params[0][0]
@@ -70,6 +75,13 @@ def parse_training_corpus(corpus_file):
     """Parses the corpus file containing the training data using UTF-8 encoding.
 
     "copied from CSV documentation"
+
+    Args:
+        courpus_file: The file object which is the input corpus to the program
+            that contains the hand classified tweet sentiments stored as a CSV.
+            The structure of the CSV is assumed to be as follows:
+
+            "Topic", "Sentiment", "TweetId", "TweetDate", "TweetText"
     """
     encoded_corpus = UTF8Recoder(open(corpus_file), 'utf-8')
     reader = csv.reader(encoded_corpus)
