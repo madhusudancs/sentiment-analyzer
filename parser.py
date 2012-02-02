@@ -33,10 +33,11 @@ as JSON.
 import codecs
 import csv
 import json
+import numpy
 import os
 
 
-class UTF8Recoder:
+class UTF8Recoder(object):
     """Iterator that reads an encoded stream and reencodes the input to UTF-8
 
     "copied from CSV documentation"
