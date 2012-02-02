@@ -83,7 +83,17 @@ def parse_training_corpus(corpus_file):
 
             "Topic", "Sentiment", "TweetId", "TweetDate", "TweetText"
     """
-    encoded_corpus = UTF8Recoder(open(corpus_file), 'utf-8')
+    encoded_corpus = UTF8Recoder(corpus_file, 'utf-8')
     reader = csv.reader(encoded_corpus)
-    return reader
+
+    reader.next()
+
+    classification = []
+    tweets = []
+
+    for row in reader:
+        classification.append(row[1])
+        tweets.append(row[4])
+
+    return classification, tweets
 
