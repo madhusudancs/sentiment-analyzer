@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright 2012 Ajay Narayan, Madhusudan C.S., Shobit N.S.
+# Copyright 2012 Ajay Narayan, Madhusudan C.S., Shobhit N.S.
 #
 # This file contains sections of code copied from the Python's CSV
 # module's (marked as "copied from CSV documentation") documentation at
