@@ -101,6 +101,26 @@ def bootstrap():
     scores = train_and_validate(classification, tweets)
     return scores
 
+
+def build_ui(scores):
+    """Prints out all the scores calculated.
+    """
+    for i, score in enumerate(scores):
+        print "Cross Validation: %d" % (i + 1)
+        print "*" * 40
+        print "Class\t\t\tPrecision\tRecall\t\tF-Score"
+        print "~~~~~\t\t\t~~~~~~~~~\t~~~~~~\t\t~~~~~~~"
+        precision = score[0]
+        recall = score[1]
+        f_score = score[2]
+        print "Positive:\t\t%f\t%f\t%f" % (precision[0], recall[0], f_score[0])
+        print "Negative:\t\t%f\t%f\t%f" % (precision[1], recall[1], f_score[1])
+        print "Neutral:\t\t%f\t%f\t%f" % (precision[2], recall[2], f_score[2])
+
+        print
+
+
 if __name__ == '__main__':
     scores = bootstrap()
+    build_ui(scores)
 
