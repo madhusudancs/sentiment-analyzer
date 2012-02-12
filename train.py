@@ -74,7 +74,9 @@ def train_and_validate(classification, tweets):
     # validation that will be used.
     scores = cross_validation.cross_val_score(
         classifier, feature_vector, classification_vector, cv=10,
-        score_func=metrics.precision_recall_fscore_support)
+        score_func= (
+            lambda true, predicted: metrics.precision_recall_fscore_support(
+                true, predicted, pos_label=None)))
 
     return scores
 
