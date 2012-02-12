@@ -17,6 +17,7 @@
 
 
 import argparse
+import cProfile
 import numpy
 
 from sklearn import cross_validation
@@ -89,6 +90,8 @@ def bootstrap():
     parser.add_argument('-c', '--corpus-file', dest='corpus_file',
                         metavar='Corpus', type=file, nargs='?',
                         help='name of the input corpus file.')
+    parser.add_argument('-p', '--profile', metavar='Profile', type=str,
+                        nargs='?', help='Run the profiler.')
     args = parser.parse_args()
 
     corpus_file =open('/Users/shobhitns/sentiment-analyzer/full-corpus.csv')
@@ -109,6 +112,16 @@ def bootstrap():
    
     scores = train_and_validate(classification + classPos + classNeg, tweets + tweetsPos + tweetsNeg)
     return scores
+
+    if args.profile:
+      if isinstance(args.profile, str):
+        cProfile.run('train_and_validate(classification, tweets)', args.profile)
+        print 'Profile stored in %s' % args.profile
+      else:
+        cProfile.run('train_and_validate(classification, tweets)')
+    else:
+      scores = train_and_validate(classification, tweets)
+      return scores
 
 
 def build_ui(scores):
