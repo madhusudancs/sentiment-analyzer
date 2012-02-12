@@ -25,6 +25,7 @@ from sklearn import metrics
 from sklearn.svm import LinearSVC
 
 from parser import parse_imdb_corpus
+from parser import parse_training_corpus
 
 
 SENTIMENT_MAP = {
@@ -84,8 +85,6 @@ def train_and_validate(classification, tweets):
 def bootstrap():
     """Bootstrap the entire training process.
     """
-    from parser import parse_training_corpus
-
     parser = argparse.ArgumentParser(description='Trainer arguments.')
     parser.add_argument('-c', '--corpus-file', dest='corpus_file',
                         metavar='Corpus', type=file, nargs='?',
