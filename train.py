@@ -24,6 +24,8 @@ from sklearn.feature_extraction.text import Vectorizer
 from sklearn import metrics
 from sklearn.svm import LinearSVC
 
+from parser import parse_imdb_corpus
+
 
 SENTIMENT_MAP = {
     'positive': 1,
@@ -88,7 +90,7 @@ def bootstrap():
                         help='name of the input corpus file.')
     args = parser.parse_args()
 
-    corpus_file = args.corpus_file
+    corpus_file =open('/Users/shobhitns/sentiment-analyzer/full-corpus.csv')
     if not corpus_file:
         print (
             "If you are running this as a standalone program supply the "
@@ -97,8 +99,14 @@ def bootstrap():
         return
 
     classification, tweets = parse_training_corpus(corpus_file)
-
-    scores = train_and_validate(classification, tweets)
+   
+    tweetsPos = parse_imdb_corpus('/Users/shobhitns/sentiment-analyzer/positive')
+    classPos = len(tweetsPos) * ['positive']
+   
+    tweetsNeg = parse_imdb_corpus('/Users/shobhitns/sentiment-analyzer/negative')
+    classNeg = len(tweetsNeg) * ['negative']
+   
+    scores = train_and_validate(classification + classPos + classNeg, tweets + tweetsPos + tweetsNeg)
     return scores
 
 
@@ -122,5 +130,4 @@ def build_ui(scores):
 
 if __name__ == '__main__':
     scores = bootstrap()
-    build_ui(scores)
 
