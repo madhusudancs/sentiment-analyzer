@@ -23,7 +23,7 @@ from sklearn import cross_validation
 from sklearn.feature_extraction.text import Vectorizer
 from sklearn import metrics
 from sklearn.svm import LinearSVC
-from sklearn.naive_bayes import GaussianNB
+
 
 SENTIMENT_MAP = {
     'positive': 1,
@@ -65,14 +65,13 @@ def train_and_validate(classification, tweets):
     """
     classification_vector, feature_vector = vectorize(classification, tweets)
 
-    # classifier = LinearSVC(loss='l2', penalty='l1', C=1000,
-    #                       dual=False, tol=1e-3)
-    classifier = GaussianNB()
+    classifier = LinearSVC(loss='l2', penalty='l1', C=1000,
+                           dual=False, tol=1e-3)
+
     # The value for the keyword argument cv is the K value in the K-Fold cross
     # validation that will be used.
-    #classifier.fit(feature_vector.toarray(), classification_vector)
     scores = cross_validation.cross_val_score(
-        classifier, feature_vector.toarray(), classification_vector, cv=10,
+        classifier, feature_vector, classification_vector, cv=10,
         score_func=metrics.precision_recall_fscore_support)
 
     return scores
@@ -83,13 +82,13 @@ def bootstrap():
     """
     from parser import parse_training_corpus
 
-    #parser = argparse.ArgumentParser(description='Trainer arguments.')
-    #parser.add_argument('-c', '--corpus-file', dest='corpus_file',
-    #                    metavar='Corpus', type=file, nargs='?',
-    #                    help='name of the input corpus file.')
-    #args = parser.parse_args()
+    parser = argparse.ArgumentParser(description='Trainer arguments.')
+    parser.add_argument('-c', '--corpus-file', dest='corpus_file',
+                        metavar='Corpus', type=file, nargs='?',
+                        help='name of the input corpus file.')
+    args = parser.parse_args()
 
-    corpus_file =open('data/full-corpus.csv')
+    corpus_file = args.corpus_file
     if not corpus_file:
         print (
             "If you are running this as a standalone program supply the "
