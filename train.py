@@ -109,6 +109,9 @@ def bootstrap():
                         help='name of the input corpus file.')
     parser.add_argument('-p', '--profile', metavar='Profile', type=str,
                         nargs='?', help='Run the profiler.')
+    parser.add_argument(
+        '-s', '--scores', action='store_true',
+        help='Prints the scores. Cannot be run with -p turned on.')
     args = parser.parse_args()
 
     corpus_file =open('/Users/shobhitns/sentiment-analyzer/full-corpus.csv')
@@ -131,15 +134,23 @@ def bootstrap():
     return scores
 
     if args.profile:
-      if isinstance(args.profile, str):
-        cProfile.run('train_and_validate(classification, tweets)', args.profile)
-        print 'Profile stored in %s' % args.profile
-      else:
-        cProfile.run('train_and_validate(classification, tweets)')
+        if isinstance(args.profile, str):
+            cProfile.runctx(
+                'train_and_validate(classification, tweets)',
+                globals(), {'classification': classification, 'tweets': tweets},
+                args.profile,)
+            print 'Profile stored in %s' % args.profile
+        else:
+            cProfile.runctx(
+                'train_and_validate(classification, tweets)',
+                globals(), {'classification': classification, 'tweets': tweets},
+                args.profile,)
     else:
-      scores = train_and_validate(classification, tweets)
-      return scores
+        scores = train_and_validate(classification, tweets)
+        if args.scores:
+            build_ui(scores)
 
+        return scores
 
 
 if __name__ == '__main__':
