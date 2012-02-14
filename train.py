@@ -24,7 +24,7 @@ from sklearn.feature_extraction.text import Vectorizer
 from sklearn import metrics
 from sklearn.svm import LinearSVC
 from sklearn.naive_bayes import GaussianNB
-
+from sklearn.ensemble import RandomForestClassifier
 SENTIMENT_MAP = {
     'positive': 1,
     'negative': -1,
@@ -67,15 +67,16 @@ def train_and_validate(classification, tweets):
 
     # classifier = LinearSVC(loss='l2', penalty='l1', C=1000,
     #                       dual=False, tol=1e-3)
-    classifier = GaussianNB()
+    classifier = RandomForestClassifier(max_depth = None, min_split = 1, random_state = 0,n_jobs = -1)
     # The value for the keyword argument cv is the K value in the K-Fold cross
     # validation that will be used.
     #classifier.fit(feature_vector.toarray(), classification_vector)
-    scores = cross_validation.cross_val_score(
-        classifier, feature_vector.toarray(), classification_vector, cv=10,
-        score_func=metrics.precision_recall_fscore_support)
+    # scores = cross_validation.cross_val_score(
+    #    classifier, feature_vector.toarray(), classification_vector, cv=10,
+    #    score_func=metrics.precision_recall_fscore_support)
 
-    return scores
+    #return scores
+    classifier.fit(feature_vector.toarray(),classification_vector)
 
 
 def bootstrap():
@@ -123,5 +124,5 @@ def build_ui(scores):
 
 if __name__ == '__main__':
     scores = bootstrap()
-    build_ui(scores)
+    # build_ui(scores)
 
