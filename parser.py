@@ -51,6 +51,9 @@ class UTF8Recoder(object):
     def next(self):
         return self.reader.next().encode("utf-8")
 
+    def read(self):
+        return self.reader.read()
+
 
 def parse_json_files(directory):
     """Walk through the directory of JSON files containing tweets.
@@ -97,3 +100,23 @@ def parse_training_corpus(corpus_file):
 
     return classification, tweets
 
+
+def parse_imdb_corpus(directory):
+    """Parses all files present in 'directory', encodes using UTF-8 and returns
+    a list of encoded strings.
+
+    Args:
+        directory : The directory under which the files(containing the training 
+            data) to be parsed are present.
+    """
+    dirParams = list(os.walk(directory))
+
+    text = []
+
+    for each in range(len(dirParams[0][2])):
+        filePtr = open(os.path.join(dirParams[0][0], dirParams[0][2][each]))
+        encoded_corpus = UTF8Recoder(filePtr, 'utf-8')
+        line = encoded_corpus.read().replace('\n', ' ')
+        text.append(line)
+
+    return text

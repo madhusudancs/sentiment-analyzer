@@ -17,6 +17,7 @@
 
 
 import argparse
+import cProfile
 import numpy
 
 from sklearn import cross_validation
@@ -25,6 +26,11 @@ from sklearn import metrics
 from sklearn.svm import LinearSVC
 from sklearn.naive_bayes import GaussianNB
 from sklearn.ensemble import RandomForestClassifier
+
+from parser import parse_imdb_corpus
+from parser import parse_training_corpus
+
+
 SENTIMENT_MAP = {
     'positive': 1,
     'negative': -1,
@@ -65,44 +71,18 @@ def train_and_validate(classification, tweets):
     """
     classification_vector, feature_vector = vectorize(classification, tweets)
 
-    # classifier = LinearSVC(loss='l2', penalty='l1', C=1000,
-    #                       dual=False, tol=1e-3)
-    classifier = RandomForestClassifier(max_depth = None, min_split = 1, random_state = 0,n_jobs = -1)
+    classifier = LinearSVC(loss='l2', penalty='l1', C=1000,
+                           dual=False, tol=1e-3)
+
     # The value for the keyword argument cv is the K value in the K-Fold cross
     # validation that will be used.
-    #classifier.fit(feature_vector.toarray(), classification_vector)
-    # scores = cross_validation.cross_val_score(
-    #    classifier, feature_vector.toarray(), classification_vector, cv=10,
-    #    score_func=metrics.precision_recall_fscore_support)
+    scores = cross_validation.cross_val_score(
+        classifier, feature_vector, classification_vector, cv=10,
+        score_func= (
+            lambda true, predicted: metrics.precision_recall_fscore_support(
+                true, predicted, pos_label=None)))
 
-    #return scores
-    classifier.fit(feature_vector.toarray(),classification_vector)
-
-
-def bootstrap():
-    """Bootstrap the entire training process.
-    """
-    from parser import parse_training_corpus
-
-    #parser = argparse.ArgumentParser(description='Trainer arguments.')
-    #parser.add_argument('-c', '--corpus-file', dest='corpus_file',
-    #                    metavar='Corpus', type=file, nargs='?',
-    #                    help='name of the input corpus file.')
-    #args = parser.parse_args()
-
-    corpus_file =open('data/full-corpus.csv')
-    if not corpus_file:
-        print (
-            "If you are running this as a standalone program supply the "
-            "corpus file for training data to option -c/--corpus-file. Use "
-            "-h option for more help on usage.")
-        return
-
-    classification, tweets = parse_training_corpus(corpus_file)
-
-    scores = train_and_validate(classification, tweets)
     return scores
-
 
 def build_ui(scores):
     """Prints out all the scores calculated.
@@ -122,7 +102,59 @@ def build_ui(scores):
         print
 
 
+def bootstrap():
+    """Bootstrap the entire training process.
+    """
+    parser = argparse.ArgumentParser(description='Trainer arguments.')
+    parser.add_argument('-c', '--corpus-file', dest='corpus_file',
+                        metavar='Corpus', type=file, nargs='?',
+                        help='name of the input corpus file.')
+    parser.add_argument('-p', '--profile', metavar='Profile', type=str,
+                        nargs='?', help='Run the profiler.')
+    parser.add_argument(
+        '-s', '--scores', action='store_true',
+        help='Prints the scores. Cannot be run with -p turned on.')
+    args = parser.parse_args()
+
+    corpus_file =open('/Users/shobhitns/sentiment-analyzer/full-corpus.csv')
+    if not corpus_file:
+        print (
+            "If you are running this as a standalone program supply the "
+            "corpus file for training data to option -c/--corpus-file. Use "
+            "-h option for more help on usage.")
+        return
+
+    classification, tweets = parse_training_corpus(corpus_file)
+   
+    tweetsPos = parse_imdb_corpus('/Users/shobhitns/sentiment-analyzer/positive')
+    classPos = len(tweetsPos) * ['positive']
+   
+    tweetsNeg = parse_imdb_corpus('/Users/shobhitns/sentiment-analyzer/negative')
+    classNeg = len(tweetsNeg) * ['negative']
+   
+    scores = train_and_validate(classification + classPos + classNeg, tweets + tweetsPos + tweetsNeg)
+    return scores
+
+    if args.profile:
+        if isinstance(args.profile, str):
+            cProfile.runctx(
+                'train_and_validate(classification, tweets)',
+                globals(), {'classification': classification, 'tweets': tweets},
+                args.profile,)
+            print 'Profile stored in %s' % args.profile
+        else:
+            cProfile.runctx(
+                'train_and_validate(classification, tweets)',
+                globals(), {'classification': classification, 'tweets': tweets},
+                args.profile,)
+    else:
+        scores = train_and_validate(classification, tweets)
+        if args.scores:
+            build_ui(scores)
+
+        return scores
+
+
 if __name__ == '__main__':
     scores = bootstrap()
-    # build_ui(scores)
 
