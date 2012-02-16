@@ -24,6 +24,7 @@ from sklearn import cross_validation
 from sklearn.feature_extraction.text import Vectorizer
 from sklearn import metrics
 from sklearn.svm import LinearSVC
+from sklearn.naive_bayes import MultinomialNB
 
 from parser import parse_imdb_corpus
 from parser import parse_training_corpus
@@ -36,8 +37,9 @@ SENTIMENT_MAP = {
     'irrelevant': 0,
     }
 
+vectorizer = Vectorizer()
 
-def vectorize(classification, tweets):
+def vectorize(classification, tweets, fit=True):
     """Maps the classification and tweets to numerical values for classifier.
 
     Args:
@@ -51,8 +53,10 @@ def vectorize(classification, tweets):
     classification_vector = numpy.array(map(
         lambda s: SENTIMENT_MAP.get(s.lower(), 0), classification))
 
-    vectorizer = Vectorizer()
-    feature_vector = vectorizer.fit_transform(tweets)
+    if fit:
+        feature_vector = vectorizer.fit_transform(tweets)
+    else:
+        feature_vector = vectorizer.transform(tweets)
 
     return (classification_vector, feature_vector)
 
@@ -71,16 +75,23 @@ def train_and_validate(classification, tweets):
 
     classifier = LinearSVC(loss='l2', penalty='l1', C=1000,
                            dual=False, tol=1e-3)
-
+   # classifier = MultinomialNB()
     # The value for the keyword argument cv is the K value in the K-Fold cross
     # validation that will be used.
-    scores = cross_validation.cross_val_score(
-        classifier, feature_vector, classification_vector, cv=10,
-        score_func= (
-            lambda true, predicted: metrics.precision_recall_fscore_support(
-                true, predicted, pos_label=None)))
+    #scores = cross_validation.cross_val_score(
+    #    classifier, feature_vector, classification_vector, cv=10,
+    #    score_func= (
+    #        lambda true, predicted: metrics.precision_recall_fscore_support(
+    #            true, predicted, pos_label=None)))
 
-    return scores
+    classifier.fit(feature_vector, classification_vector)
+    ltf = open('data/whitney.txt')
+    live_tweets = [l.strip() for l in ltf.readlines()]
+
+    cvt, lvt = vectorize([], live_tweets, fit=False)
+    return classifier.predict(lvt)
+
+    return scores, classifier
 
 def build_ui(scores):
     """Prints out all the scores calculated.
@@ -114,7 +125,7 @@ def bootstrap():
         help='Prints the scores. Cannot be run with -p turned on.')
     args = parser.parse_args()
 
-    corpus_file =open('/Users/shobhitns/sentiment-analyzer/full-corpus.csv')
+    corpus_file =open('/home/mask/python/cs221/sentiment-analyzer/data/full-corpus.csv')
     if not corpus_file:
         print (
             "If you are running this as a standalone program supply the "
@@ -124,14 +135,13 @@ def bootstrap():
 
     classification, tweets = parse_training_corpus(corpus_file)
    
-    tweetsPos = parse_imdb_corpus('/Users/shobhitns/sentiment-analyzer/positive')
+    tweetsPos = parse_imdb_corpus('/home/mask/python/cs221/sentiment-analyzer/positive')
     classPos = len(tweetsPos) * ['positive']
-   
-    tweetsNeg = parse_imdb_corpus('/Users/shobhitns/sentiment-analyzer/negative')
+    
+    tweetsNeg = parse_imdb_corpus('/home/mask/python/cs221/sentiment-analyzer/negative')
     classNeg = len(tweetsNeg) * ['negative']
    
     scores = train_and_validate(classification + classPos + classNeg, tweets + tweetsPos + tweetsNeg)
-    return scores
 
     if args.profile:
         if isinstance(args.profile, str):
