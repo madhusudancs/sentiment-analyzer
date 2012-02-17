@@ -123,19 +123,23 @@ def parse_imdb_corpus(directory):
 
 
 def get_tweetID(directory):
+    dirParams = list(os.walk(directory))
     tweetDict = {}
-    for filename in list(os.walk(directory))[0][2]:
-        tempDict = json.loads(open(filename, 'r').read()))
-        tweetID = tempDict['id']
-        tweetDict[tweetID] = tempDict
+    tempDict = {}
+    for each in dirParams[0][2]:
+        filename = os.path.join(dirParams[0][0], each)
+        tempDict = json.loads(open(filename, 'r').read())
+        if 'id' in tempDict.keys():
+            tweetID = tempDict['id']
+            tweetDict[tweetID] = tempDict
 
     return tweetDict
 
 
 def append_tweetID(corpus_file):
-    tweetDict = get_tweetID('json_data')
+    tweetDict = get_tweetID('/home/mask/python/cs221/sentiment-analyzer/data/json_data')
 
-    encoded_corpus = UTF8Recoder(corpus_file, 'utf-8')
+    encoded_corpus = UTF8Recoder(open(corpus_file), 'utf-8')
     reader = csv.reader(encoded_corpus)
 
     openFile = open('writeFile', 'w')
@@ -143,8 +147,11 @@ def append_tweetID(corpus_file):
     reader.next()
 
     for row in reader:
-	if row[2], v in tweetDict.iteritems():
+        v = tweetDict.get(int(row[2]), None)
+        if v:
             row.append(v['retweet_count'])
             row.append(v['favorited'])
-            writer.write(row)
+            writer.writerow(row)
 
+
+append_tweetID('/home/mask/python/cs221/sentiment-analyzer/data/full-corpus.csv')
