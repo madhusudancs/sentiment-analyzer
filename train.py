@@ -57,8 +57,8 @@ class Trainer(object):
         self.classifier = None
         self.scores = None
 
-    def vectorize(self, fit=True):
-        """Maps the classification and tweets to numerical values for classifier.
+    def initial_fit(self):
+        """Initializes the vectorizer by doing a fit and then a transform.
         """
         # We map the sentiments to the values specified in the SENTIMENT_MAP.
         # For any sentiment that is not part of the map we give a value 0.
@@ -66,12 +66,14 @@ class Trainer(object):
             lambda s: self.SENTIMENT_MAP.get(s.lower(), 0),
                                              self.classification))
 
-        if fit:
-            feature_vector = self.vectorizer.fit_transform(self.data)
-        else:
-            feature_vector = self.vectorizer.transform(self.data)
+        feature_vector = self.vectorizer.fit_transform(self.data)
 
         return (classification_vector, feature_vector)
+
+    def transform(self, test_data):
+        """Performs the transform using the already initialized vectorizer.
+        """
+        feature_vector = self.vectorizer.transform(test_data)
 
     def score_func(self, true, predicted):
         """Score function for the validation.
