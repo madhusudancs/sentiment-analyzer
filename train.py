@@ -41,25 +41,44 @@ class Trainer(object):
         'irrelevant': 0,
         }
 
-    def __init__(self, data, classification):
+    def __init__(self):
         """Initializes the datastructures required.
-
-        Args:
-           data: A list of already hand classified tweets to train our
-               classifier.
-           classification: A list containing the classification to each
-               individual tweet in the tweets list.
         """
+        # The actual text extraction object (does text to vector mapping).
         self.vectorizer = Vectorizer()
-        self.data = data
-        self.classification = classification
+
+        # A list of already hand classified tweets to train our classifier.
+        self.data = None
+
+        # A list containing the classification to each individual tweet
+        # in the tweets list.
+        self.classification = None
 
         self.classifier = None
         self.scores = None
 
+    def initialize_training_data(self):
+        """Initializes all types of training data we have.
+        """
+        classification, tweets = parse_training_corpus(corpus_file)
+
+        review_positive = parse_imdb_corpus(
+            '/media/python/workspace/sentiment-analyzer/data/positive')
+        class_positive = len(tweetsPos) * ['positive']
+
+        imdb_negative = parse_imdb_corpus(
+            '/media/python/workspace/sentiment-analyzer/data/negative')
+        class_negative = len(tweetsNeg) * ['negative']
+
+        self.data = tweets + reviews_positive + reviews_negative
+        self.classification = (classification + class_positive +
+            class_negative)
+
     def initial_fit(self):
         """Initializes the vectorizer by doing a fit and then a transform.
         """
+        self.initialize_training_data()
+
         # We map the sentiments to the values specified in the SENTIMENT_MAP.
         # For any sentiment that is not part of the map we give a value 0.
         classification_vector = numpy.array(map(
@@ -140,7 +159,6 @@ def bootstrap():
         help='Prints the mean accuracies. Cannot be run with -p/-s turned on.')
     args = parser.parse_args()
 
-    corpus_file =open('/media/python/workspace/sentiment-analyzer/data/full-corpus.csv')
     if not corpus_file:
         print (
             "If you are running this as a standalone program supply the "
@@ -148,18 +166,8 @@ def bootstrap():
             "-h option for more help on usage.")
         return
 
-    classification, tweets = parse_training_corpus(corpus_file)
-
-    tweetsPos = parse_imdb_corpus(
-        '/media/python/workspace/sentiment-analyzer/data/positive')
-    classPos = len(tweetsPos) * ['positive']
-
-    tweetsNeg = parse_imdb_corpus(
-        '/media/python/workspace/sentiment-analyzer/data/negative')
-    classNeg = len(tweetsNeg) * ['negative']
-
-    trainer = Trainer(tweets + tweetsPos + tweetsNeg,
-                      classification + classPos + classNeg)
+    corpus_file = open('/media/python/workspace/sentiment-analyzer/data/full-corpus.csv')
+    trainer = Trainer()
     scores = trainer.train_and_validate(mean=args.mean)
 
     if args.profile:
