@@ -82,7 +82,7 @@ def train_and_validate(classification, tweets, mean=False):
 
     classifier = svm.LinearSVC(loss='l2', penalty='l1', C=1000,
                            dual=False, tol=1e-3)
-
+   # classifier = naive_bayes.GaussianNB()
     # The value for the keyword argument cv is the K value in the K-Fold cross
     # validation that will be used.
     scores = cross_validation.cross_val_score(
@@ -133,7 +133,7 @@ def bootstrap():
         help='Prints the mean accuracies. Cannot be run with -p/-s turned on.')
     args = parser.parse_args()
 
-    corpus_file =open('/media/python/workspace/sentiment-analyzer/data/full-corpus.csv')
+    corpus_file =open('/home/mask/python/cs221/sentiment-analyzer/data/full-corpus.csv')
     if not corpus_file:
         print (
             "If you are running this as a standalone program supply the "
@@ -144,11 +144,11 @@ def bootstrap():
     classification, tweets = parse_training_corpus(corpus_file)
 
     tweetsPos = parse_imdb_corpus(
-        '/media/python/workspace/sentiment-analyzer/data/positive')
+        '/home/mask/python/cs221/sentiment-analyzer/positive')
     classPos = len(tweetsPos) * ['positive']
 
     tweetsNeg = parse_imdb_corpus(
-        '/media/python/workspace/sentiment-analyzer/data/negative')
+        '/home/mask/python/cs221/sentiment-analyzer/negative')
     classNeg = len(tweetsNeg) * ['negative']
 
     scores = train_and_validate(classification + classPos + classNeg,
