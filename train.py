@@ -30,90 +30,95 @@ from parser import parse_imdb_corpus
 from parser import parse_training_corpus
 
 
-SENTIMENT_MAP = {
-    'positive': 1,
-    'negative': -1,
-    'neutral': 0,
-    'irrelevant': 0,
-    }
-
-vectorizer = Vectorizer()
-
-def vectorize(classification, tweets, fit=True):
-    """Maps the classification and tweets to numerical values for classifier.
-
-    Args:
-       classification: A list containing the classification to each individual
-           tweet in the tweets list.
-       tweets: A list of already hand classified tweets to train our classifier.
-
+class Trainer(object):
+    """Trains the classifier with training data and does the cross validation.
     """
-    # We map the sentiments to the values specified in the SENTIMENT_MAP.
-    # For any sentiment that is not part of the map we give a value 0.
-    classification_vector = numpy.array(map(
-        lambda s: SENTIMENT_MAP.get(s.lower(), 0), classification))
 
-    if fit:
-        feature_vector = vectorizer.fit_transform(tweets)
-    else:
-        feature_vector = vectorizer.transform(tweets)
+    SENTIMENT_MAP = {
+        'positive': 1,
+        'negative': -1,
+        'neutral': 0,
+        'irrelevant': 0,
+        }
 
-    return (classification_vector, feature_vector)
+    def __init__(self, data, classification):
+        """Initializes the datastructures required.
 
+        Args:
+           data: A list of already hand classified tweets to train our
+               classifier.
+           classification: A list containing the classification to each
+               individual tweet in the tweets list.
+        """
+        self.vectorizer = Vectorizer()
+        self.data = data
+        self.classification = classification
 
-def score_func(true, predicted):
-    """Score function for the validation.
-    """
-    return metrics.precision_recall_fscore_support(
-        true, predicted, pos_label=None)
+        self.classifier = None
+        self.scores = None
 
+    def vectorize(self, fit=True):
+        """Maps the classification and tweets to numerical values for classifier.
+        """
+        # We map the sentiments to the values specified in the SENTIMENT_MAP.
+        # For any sentiment that is not part of the map we give a value 0.
+        classification_vector = numpy.array(map(
+            lambda s: self.SENTIMENT_MAP.get(s.lower(), 0),
+                                             self.classification))
 
-def train_and_validate(classification, tweets, mean=False):
-    """Trains the SVC with the training data and validates with the test data.
-
-    We do a K-Fold cross validation with K = 10.
-
-    Args:
-       classification: A list containing the classification to each individual
-           tweet in the tweets list.
-       tweets: A list of already hand classified tweets to train our classifier.
-    """
-    classification_vector, feature_vector = vectorize(classification, tweets)
-
-    classifier = svm.LinearSVC(loss='l2', penalty='l1', C=1000,
-                           dual=False, tol=1e-3)
-   # classifier = naive_bayes.GaussianNB()
-    # The value for the keyword argument cv is the K value in the K-Fold cross
-    # validation that will be used.
-    scores = cross_validation.cross_val_score(
-        classifier, feature_vector, classification_vector, cv=10,
-        score_func=score_func if not mean else None)
-
-    return scores
-
-
-def build_ui(scores, mean=False):
-    """Prints out all the scores calculated.
-    """
-    for i, score in enumerate(scores):
-        print "Cross Validation: %d" % (i + 1)
-        print "*" * 40
-        if mean:
-            print "Mean Accuracy: %f" % (score)
+        if fit:
+            feature_vector = self.vectorizer.fit_transform(self.data)
         else:
-            print "Class\t\t\tPrecision\tRecall\t\tF-Score"
-            print "~~~~~\t\t\t~~~~~~~~~\t~~~~~~\t\t~~~~~~~"
-            precision = score[0]
-            recall = score[1]
-            f_score = score[2]
-            print "Positive:\t\t%f\t%f\t%f" % (precision[0], recall[0],
-                                               f_score[0])
-            print "Negative:\t\t%f\t%f\t%f" % (precision[1], recall[1],
-                                               f_score[1])
-            print "Neutral:\t\t%f\t%f\t%f" % (precision[2], recall[2],
-                                              f_score[2])
+            feature_vector = self.vectorizer.transform(self.data)
 
-        print
+        return (classification_vector, feature_vector)
+
+    def score_func(self, true, predicted):
+        """Score function for the validation.
+        """
+        return metrics.precision_recall_fscore_support(
+            true, predicted, pos_label=None)
+
+    def train_and_validate(self, mean=False):
+        """Trains the SVC with the training data and validates with the test data.
+
+        We do a K-Fold cross validation with K = 10.
+        """
+        classification_vector, feature_vector = self.vectorize()
+
+        self.classifier = svm.LinearSVC(loss='l2', penalty='l1', C=1000,
+                                        dual=False, tol=1e-3)
+
+        # The value for the keyword argument cv is the K value in the K-Fold cross
+        # validation that will be used.
+        self.scores = cross_validation.cross_val_score(
+            self.classifier, feature_vector, classification_vector, cv=10,
+            score_func=score_func if not mean else None)
+
+        return self.scores
+
+    def build_ui(self, mean=False):
+        """Prints out all the scores calculated.
+        """
+        for i, score in enumerate(self.scores):
+            print "Cross Validation: %d" % (i + 1)
+            print "*" * 40
+            if mean:
+                print "Mean Accuracy: %f" % (score)
+            else:
+                print "Class\t\t\tPrecision\tRecall\t\tF-Score"
+                print "~~~~~\t\t\t~~~~~~~~~\t~~~~~~\t\t~~~~~~~"
+                precision = score[0]
+                recall = score[1]
+                f_score = score[2]
+                print "Positive:\t\t%f\t%f\t%f" % (precision[0], recall[0],
+                                                   f_score[0])
+                print "Negative:\t\t%f\t%f\t%f" % (precision[1], recall[1],
+                                                   f_score[1])
+                print "Neutral:\t\t%f\t%f\t%f" % (precision[2], recall[2],
+                                                  f_score[2])
+
+            print
 
 
 def bootstrap():
@@ -133,7 +138,7 @@ def bootstrap():
         help='Prints the mean accuracies. Cannot be run with -p/-s turned on.')
     args = parser.parse_args()
 
-    corpus_file =open('/home/mask/python/cs221/sentiment-analyzer/data/full-corpus.csv')
+    corpus_file =open('/media/python/workspace/sentiment-analyzer/data/full-corpus.csv')
     if not corpus_file:
         print (
             "If you are running this as a standalone program supply the "
@@ -144,15 +149,16 @@ def bootstrap():
     classification, tweets = parse_training_corpus(corpus_file)
 
     tweetsPos = parse_imdb_corpus(
-        '/home/mask/python/cs221/sentiment-analyzer/positive')
+        '/media/python/workspace/sentiment-analyzer/data/positive')
     classPos = len(tweetsPos) * ['positive']
 
     tweetsNeg = parse_imdb_corpus(
-        '/home/mask/python/cs221/sentiment-analyzer/negative')
+        '/media/python/workspace/sentiment-analyzer/data/negative')
     classNeg = len(tweetsNeg) * ['negative']
 
-    scores = train_and_validate(classification + classPos + classNeg,
-                                tweets + tweetsPos + tweetsNeg, mean=args.mean)
+    trainer = Trainer(tweets + tweetsPos + tweetsNeg,
+                      classification + classPos + classNeg)
+    scores = trainer.train_and_validate(mean=args.mean)
 
     if args.profile:
         if isinstance(args.profile, str):
@@ -168,9 +174,9 @@ def bootstrap():
                 args.profile,)
     else:
         if args.mean:
-          build_ui(scores, mean=True)
+          trainer.build_ui(mean=True)
         if args.scores:
-            build_ui(scores)
+            trainer.build_ui()
 
         return scores
 
