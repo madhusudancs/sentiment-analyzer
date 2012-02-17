@@ -86,7 +86,7 @@ class Trainer(object):
 
         We do a K-Fold cross validation with K = 10.
         """
-        classification_vector, feature_vector = self.vectorize()
+        classification_vector, feature_vector = self.initial_fit()
 
         self.classifier = svm.LinearSVC(loss='l2', penalty='l1', C=1000,
                                         dual=False, tol=1e-3)
