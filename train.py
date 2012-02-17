@@ -61,7 +61,6 @@ def vectorize(classification, tweets, fit=True):
     return (classification_vector, feature_vector)
 
 
-def train_and_validate(classification, tweets):
 def score_func(true, predicted):
     """Score function for the validation.
     """
@@ -69,6 +68,7 @@ def score_func(true, predicted):
         true, predicted, pos_label=None)
 
 
+def train_and_validate(classification, tweets, mean=False):
     """Trains the SVC with the training data and validates with the test data.
 
     We do a K-Fold cross validation with K = 10.
@@ -80,40 +80,38 @@ def score_func(true, predicted):
     """
     classification_vector, feature_vector = vectorize(classification, tweets)
 
-    classifier = LinearSVC(loss='l2', penalty='l1', C=1000,
+    classifier = svm.LinearSVC(loss='l2', penalty='l1', C=1000,
                            dual=False, tol=1e-3)
-   # classifier = MultinomialNB()
+
     # The value for the keyword argument cv is the K value in the K-Fold cross
     # validation that will be used.
-    #scores = cross_validation.cross_val_score(
-    #    classifier, feature_vector, classification_vector, cv=10,
-    #    score_func= (
-    #        lambda true, predicted: metrics.precision_recall_fscore_support(
-    #            true, predicted, pos_label=None)))
+    scores = cross_validation.cross_val_score(
+        classifier, feature_vector, classification_vector, cv=10,
+        score_func=score_func if not mean else None)
 
-    classifier.fit(feature_vector, classification_vector)
-    ltf = open('data/whitney.txt')
-    live_tweets = [l.strip() for l in ltf.readlines()]
+    return scores
 
-    cvt, lvt = vectorize([], live_tweets, fit=False)
-    return classifier.predict(lvt)
 
-    return scores, classifier
-
-def build_ui(scores):
+def build_ui(scores, mean=False):
     """Prints out all the scores calculated.
     """
     for i, score in enumerate(scores):
         print "Cross Validation: %d" % (i + 1)
         print "*" * 40
-        print "Class\t\t\tPrecision\tRecall\t\tF-Score"
-        print "~~~~~\t\t\t~~~~~~~~~\t~~~~~~\t\t~~~~~~~"
-        precision = score[0]
-        recall = score[1]
-        f_score = score[2]
-        print "Positive:\t\t%f\t%f\t%f" % (precision[0], recall[0], f_score[0])
-        print "Negative:\t\t%f\t%f\t%f" % (precision[1], recall[1], f_score[1])
-        print "Neutral:\t\t%f\t%f\t%f" % (precision[2], recall[2], f_score[2])
+        if mean:
+            print "Mean Accuracy: %f" % (score)
+        else:
+            print "Class\t\t\tPrecision\tRecall\t\tF-Score"
+            print "~~~~~\t\t\t~~~~~~~~~\t~~~~~~\t\t~~~~~~~"
+            precision = score[0]
+            recall = score[1]
+            f_score = score[2]
+            print "Positive:\t\t%f\t%f\t%f" % (precision[0], recall[0],
+                                               f_score[0])
+            print "Negative:\t\t%f\t%f\t%f" % (precision[1], recall[1],
+                                               f_score[1])
+            print "Neutral:\t\t%f\t%f\t%f" % (precision[2], recall[2],
+                                              f_score[2])
 
         print
 
@@ -130,9 +128,12 @@ def bootstrap():
     parser.add_argument(
         '-s', '--scores', action='store_true',
         help='Prints the scores. Cannot be run with -p turned on.')
+    parser.add_argument(
+        '-m', '--mean', action='store_true',
+        help='Prints the mean accuracies. Cannot be run with -p/-s turned on.')
     args = parser.parse_args()
 
-    corpus_file =open('/home/mask/python/cs221/sentiment-analyzer/data/full-corpus.csv')
+    corpus_file =open('/media/python/workspace/sentiment-analyzer/data/full-corpus.csv')
     if not corpus_file:
         print (
             "If you are running this as a standalone program supply the "
@@ -141,14 +142,17 @@ def bootstrap():
         return
 
     classification, tweets = parse_training_corpus(corpus_file)
-   
-    tweetsPos = parse_imdb_corpus('/home/mask/python/cs221/sentiment-analyzer/positive')
+
+    tweetsPos = parse_imdb_corpus(
+        '/media/python/workspace/sentiment-analyzer/data/positive')
     classPos = len(tweetsPos) * ['positive']
-    
-    tweetsNeg = parse_imdb_corpus('/home/mask/python/cs221/sentiment-analyzer/negative')
+
+    tweetsNeg = parse_imdb_corpus(
+        '/media/python/workspace/sentiment-analyzer/data/negative')
     classNeg = len(tweetsNeg) * ['negative']
-   
-    scores = train_and_validate(classification + classPos + classNeg, tweets + tweetsPos + tweetsNeg)
+
+    scores = train_and_validate(classification + classPos + classNeg,
+                                tweets + tweetsPos + tweetsNeg, mean=args.mean)
 
     if args.profile:
         if isinstance(args.profile, str):
@@ -163,7 +167,8 @@ def bootstrap():
                 globals(), {'classification': classification, 'tweets': tweets},
                 args.profile,)
     else:
-        scores = train_and_validate(classification, tweets)
+        if args.mean:
+          build_ui(scores, mean=True)
         if args.scores:
             build_ui(scores)
 
@@ -172,4 +177,3 @@ def bootstrap():
 
 if __name__ == '__main__':
     scores = bootstrap()
-
