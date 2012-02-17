@@ -62,6 +62,13 @@ def vectorize(classification, tweets, fit=True):
 
 
 def train_and_validate(classification, tweets):
+def score_func(true, predicted):
+    """Score function for the validation.
+    """
+    return metrics.precision_recall_fscore_support(
+        true, predicted, pos_label=None)
+
+
     """Trains the SVC with the training data and validates with the test data.
 
     We do a K-Fold cross validation with K = 10.
