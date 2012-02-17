@@ -180,12 +180,14 @@ def bootstrap():
 
     if args.profile:
         if isinstance(args.profile, str):
-            cProfile.run(
-                'Trainer().train_and_validate()', args.profile)
+            cProfile.runctx(
+                'trainer.train_and_validate()',
+                {'trainer': trainer}, {}, args.profile)
             print 'Profile stored in %s' % args.profile
         else:
-            cProfile.run(
-                'Train().train_and_validate()', args.profile)
+            cProfile.runctx(
+                'trainer.train_and_validate()',
+                {'trainer': trainer}, {}, args.profile)
     else:
         scores = trainer.train_and_validate(mean=args.mean)
         if args.mean:
