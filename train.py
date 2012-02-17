@@ -23,8 +23,8 @@ import numpy
 from sklearn import cross_validation
 from sklearn.feature_extraction.text import Vectorizer
 from sklearn import metrics
-from sklearn.svm import LinearSVC
-from sklearn.naive_bayes import MultinomialNB
+from sklearn import svm
+from sklearn import naive_bayes
 
 from parser import parse_imdb_corpus
 from parser import parse_training_corpus
