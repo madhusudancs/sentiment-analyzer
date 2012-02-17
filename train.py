@@ -95,8 +95,6 @@ class Trainer(object):
     def initial_fit(self):
         """Initializes the vectorizer by doing a fit and then a transform.
         """
-        self.initialize_training_data()
-
         # We map the sentiments to the values specified in the SENTIMENT_MAP.
         # For any sentiment that is not part of the map we give a value 0.
         classification_vector = numpy.array(map(
@@ -178,7 +176,7 @@ def bootstrap():
     args = parser.parse_args()
 
     trainer = Trainer()
-    scores = trainer.train_and_validate(mean=args.mean)
+    trainer.initialize_training_data()
 
     if args.profile:
         if isinstance(args.profile, str):
@@ -189,6 +187,7 @@ def bootstrap():
             cProfile.run(
                 'Train().train_and_validate()', args.profile)
     else:
+        scores = trainer.train_and_validate(mean=args.mean)
         if args.mean:
           trainer.build_ui(mean=True)
         if args.scores:
