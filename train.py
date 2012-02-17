@@ -63,19 +63,34 @@ class Trainer(object):
         corpus_file = open(
             '/media/python/workspace/sentiment-analyzer/data/full-corpus.csv')
 
-        classification, tweets = parse_training_corpus(corpus_file)
+        classification, tweets, retweets, favorited = parse_training_corpus(
+            corpus_file)
 
         reviews_positive = parse_imdb_corpus(
             '/media/python/workspace/sentiment-analyzer/data/positive')
-        class_positive = len(reviews_positive) * ['positive']
+        num_postive_reviews = len(reviews_positive)
+        class_positive = ['positive'] * num_postive_reviews
 
         reviews_negative = parse_imdb_corpus(
             '/media/python/workspace/sentiment-analyzer/data/negative')
-        class_negative = len(reviews_negative) * ['negative']
+        num_negative_reviews = len(reviews_negative)
+        class_negative = ['negative'] * num_negative_reviews
 
         self.data = tweets + reviews_positive + reviews_negative
         self.classification = (classification + class_positive +
             class_negative)
+
+        # Can't use the * operator here because we are using a list of
+        # lists. To see the problem, try this:
+        # a = [[0]] * 100
+        # print a
+        # a[5][0] = 25
+        # print a
+        filler_for_reviews = [[0] for i in range(
+            num_postive_reviews + num_negative_reviews)]
+
+        self.retweet = retweets + filler_for_reviews
+        self.favorited = favorited + filler_for_reviews
 
     def initial_fit(self):
         """Initializes the vectorizer by doing a fit and then a transform.
