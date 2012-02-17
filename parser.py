@@ -93,12 +93,16 @@ def parse_training_corpus(corpus_file):
 
     classification = []
     tweets = []
+    retweets = []
+    favorited = []
 
     for row in reader:
         classification.append(row[1])
         tweets.append(row[4])
+        retweets.append([1 if row[5] else 0])
+        favorited.append([1 if row[6] else 0])
 
-    return classification, tweets
+    return classification, tweets, retweets, favorited
 
 
 def parse_imdb_corpus(directory):
