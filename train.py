@@ -60,15 +60,18 @@ class Trainer(object):
     def initialize_training_data(self):
         """Initializes all types of training data we have.
         """
+        corpus_file = open(
+            '/media/python/workspace/sentiment-analyzer/data/full-corpus.csv')
+
         classification, tweets = parse_training_corpus(corpus_file)
 
-        review_positive = parse_imdb_corpus(
+        reviews_positive = parse_imdb_corpus(
             '/media/python/workspace/sentiment-analyzer/data/positive')
-        class_positive = len(tweetsPos) * ['positive']
+        class_positive = len(reviews_positive) * ['positive']
 
-        imdb_negative = parse_imdb_corpus(
+        reviews_negative = parse_imdb_corpus(
             '/media/python/workspace/sentiment-analyzer/data/negative')
-        class_negative = len(tweetsNeg) * ['negative']
+        class_negative = len(reviews_negative) * ['negative']
 
         self.data = tweets + reviews_positive + reviews_negative
         self.classification = (classification + class_positive +
@@ -159,29 +162,17 @@ def bootstrap():
         help='Prints the mean accuracies. Cannot be run with -p/-s turned on.')
     args = parser.parse_args()
 
-    if not corpus_file:
-        print (
-            "If you are running this as a standalone program supply the "
-            "corpus file for training data to option -c/--corpus-file. Use "
-            "-h option for more help on usage.")
-        return
-
-    corpus_file = open('/media/python/workspace/sentiment-analyzer/data/full-corpus.csv')
     trainer = Trainer()
     scores = trainer.train_and_validate(mean=args.mean)
 
     if args.profile:
         if isinstance(args.profile, str):
-            cProfile.runctx(
-                'train_and_validate(classification, tweets)',
-                globals(), {'classification': classification, 'tweets': tweets},
-                args.profile,)
+            cProfile.run(
+                'Trainer().train_and_validate()', args.profile)
             print 'Profile stored in %s' % args.profile
         else:
-            cProfile.runctx(
-                'train_and_validate(classification, tweets)',
-                globals(), {'classification': classification, 'tweets': tweets},
-                args.profile,)
+            cProfile.run(
+                'Train().train_and_validate()', args.profile)
     else:
         if args.mean:
           trainer.build_ui(mean=True)
