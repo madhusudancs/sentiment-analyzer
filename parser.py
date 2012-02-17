@@ -137,7 +137,7 @@ def get_tweetID(directory):
 
 
 def append_tweetID(corpus_file):
-    tweetDict = get_tweetID('/home/mask/python/cs221/sentiment-analyzer/data/json_data')
+    tweetDict = get_tweetID('/media/python/workspace/sentiment-analyzer/data/json_data')
 
     encoded_corpus = UTF8Recoder(open(corpus_file), 'utf-8')
     reader = csv.reader(encoded_corpus)
@@ -154,4 +154,4 @@ def append_tweetID(corpus_file):
             writer.writerow(row)
 
 
-append_tweetID('/home/mask/python/cs221/sentiment-analyzer/data/full-corpus.csv')
+append_tweetID('/media/python/workspace/sentiment-analyzer/data/full-corpus.csv')
