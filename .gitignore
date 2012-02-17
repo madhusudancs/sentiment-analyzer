@@ -12,6 +12,7 @@
 *.swp
 .project
 .pydevproject
+.spyderproject
 .ropeproject
 *.egg-info
 /.installed.cfg
