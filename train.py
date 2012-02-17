@@ -117,8 +117,7 @@ class Trainer(object):
         """
         classification_vector, feature_vector = self.initial_fit()
 
-        self.classifier = svm.LinearSVC(loss='l2', penalty='l1', C=1000,
-                                        dual=False, tol=1e-3)
+        self.classifier = naive_bayes.MultinomialNB()
 
         def score_func(true, predicted):
             """Score function for the validation.
