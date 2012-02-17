@@ -97,12 +97,6 @@ class Trainer(object):
         """
         feature_vector = self.vectorizer.transform(test_data)
 
-    def score_func(self, true, predicted):
-        """Score function for the validation.
-        """
-        return metrics.precision_recall_fscore_support(
-            true, predicted, pos_label=None)
-
     def train_and_validate(self, mean=False):
         """Trains the SVC with the training data and validates with the test data.
 
@@ -112,6 +106,12 @@ class Trainer(object):
 
         self.classifier = svm.LinearSVC(loss='l2', penalty='l1', C=1000,
                                         dual=False, tol=1e-3)
+
+        def score_func(true, predicted):
+            """Score function for the validation.
+            """
+            return metrics.precision_recall_fscore_support(
+                true, predicted, pos_label=None)
 
         # The value for the keyword argument cv is the K value in the K-Fold cross
         # validation that will be used.
