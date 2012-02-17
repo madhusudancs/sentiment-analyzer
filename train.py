@@ -21,10 +21,10 @@ import cProfile
 import numpy
 
 from sklearn import cross_validation
-from sklearn.feature_extraction.text import Vectorizer
 from sklearn import metrics
 from sklearn import svm
 from sklearn import naive_bayes
+from sklearn.feature_extraction.text import Vectorizer
 
 from parser import parse_imdb_corpus
 from parser import parse_training_corpus
