@@ -120,3 +120,31 @@ def parse_imdb_corpus(directory):
         text.append(line)
 
     return text
+
+
+def get_tweetID(directory):
+    tweetDict = {}
+    for filename in list(os.walk(directory))[0][2]:
+        tempDict = json.loads(open(filename, 'r').read()))
+        tweetID = tempDict['id']
+        tweetDict[tweetID] = tempDict
+
+    return tweetDict
+
+
+def append_tweetID(corpus_file):
+    tweetDict = get_tweetID('json_data')
+
+    encoded_corpus = UTF8Recoder(corpus_file, 'utf-8')
+    reader = csv.reader(encoded_corpus)
+
+    openFile = open('writeFile', 'w')
+    writer = csv.writer(openFile)
+    reader.next()
+
+    for row in reader:
+	if row[2], v in tweetDict.iteritems():
+            row.append(v['retweet_count'])
+            row.append(v['favorited'])
+            writer.write(row)
+
