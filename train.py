@@ -167,7 +167,7 @@ class Trainer(object):
             """Score function for the validation.
             """
             return metrics.precision_recall_fscore_support(
-                true, predicted, pos_label=None)
+                true, predicted, pos_label=None, average='macro')
 
         # The value for the keyword argument cv is the K value in the K-Fold cross
         # validation that will be used.
@@ -186,17 +186,13 @@ class Trainer(object):
             if mean:
                 print "Mean Accuracy: %f" % (score)
             else:
-                print "Class\t\t\tPrecision\tRecall\t\tF-Score"
-                print "~~~~~\t\t\t~~~~~~~~~\t~~~~~~\t\t~~~~~~~"
+                print "Precision\tRecall\t\tF-Score"
+                print "~~~~~~~~~\t~~~~~~\t\t~~~~~~~"
                 precision = score[0]
                 recall = score[1]
                 f_score = score[2]
-                print "Positive:\t\t%f\t%f\t%f" % (precision[0], recall[0],
-                                                   f_score[0])
-                print "Negative:\t\t%f\t%f\t%f" % (precision[1], recall[1],
-                                                   f_score[1])
-                print "Neutral:\t\t%f\t%f\t%f" % (precision[2], recall[2],
-                                                  f_score[2])
+                print "%f\t%f\t%f" % (precision, recall, f_score)
+
 
             print
 
