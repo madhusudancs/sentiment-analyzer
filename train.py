@@ -18,7 +18,9 @@
 
 import argparse
 import cProfile
+import datetime
 import numpy
+import scipy
 
 from sklearn import cross_validation
 from sklearn import metrics
@@ -63,8 +65,8 @@ class Trainer(object):
         corpus_file = open(
             '/media/python/workspace/sentiment-analyzer/data/full-corpus.csv')
 
-        classification, tweets, retweets, favorited = parse_training_corpus(
-            corpus_file)
+        classification, date_time, tweets, retweets, favorited = \
+            parse_training_corpus(corpus_file)
 
         reviews_positive = parse_imdb_corpus(
             '/media/python/workspace/sentiment-analyzer/data/positive')
@@ -80,17 +82,9 @@ class Trainer(object):
         self.classification = (classification + class_positive +
             class_negative)
 
-        # Can't use the * operator here because we are using a list of
-        # lists. To see the problem, try this:
-        # a = [[0]] * 100
-        # print a
-        # a[5][0] = 25
-        # print a
-        filler_for_reviews = [[0] for i in range(
-            num_postive_reviews + num_negative_reviews)]
-
-        self.retweet = retweets + filler_for_reviews
-        self.favorited = favorited + filler_for_reviews
+        self.date_time = date_time
+        self.retweet = retweets
+        self.favorited = favorited
 
     def initial_fit(self):
         """Initializes the vectorizer by doing a fit and then a transform.
@@ -101,7 +95,57 @@ class Trainer(object):
             lambda s: self.SENTIMENT_MAP.get(s.lower(), 0),
                                              self.classification))
 
+        time_vector = []
+        late_night = datetime.time(0, 0, 0)
+        morning = datetime.time(6, 0, 0)
+        afternoon = datetime.time(12, 0, 0)
+        evening = datetime.time(16, 0, 0)
+        night = datetime.time(19, 0, 0)
+        night_end = datetime.time(23, 59, 59)
+        for dt in self.date_time:
+            time = dt.time()
+            if late_night <= time < morning:
+                time_map = 0
+            elif morning <= time < afternoon:
+                time_map = 1
+            elif afternoon <= time < evening:
+                time_map = 2
+            elif evening <= time < night:
+                time_map = 3
+            elif night <= time <= night_end:
+                time_map = 4
+
+            time_vector.append(time_map)
+
+
         feature_vector = self.vectorizer.fit_transform(self.data)
+
+        # Extend the feature vector with time, retweet and favorited
+        # information
+        time_coo = scipy.sparse.coo_matrix([time_vector]).transpose()
+        retweet_coo = scipy.sparse.coo_matrix([self.retweet]).transpose()
+        favorited_coo = scipy.sparse.coo_matrix([self.favorited]).transpose()
+        feature_vector_coo = feature_vector.tocoo()
+        data = scipy.concatenate((feature_vector_coo.data, retweet_coo.data,
+                                  favorited_coo.data, time_coo.data))
+        rows = scipy.concatenate((feature_vector_coo.row, retweet_coo.row,
+                                  favorited_coo.row, time_coo.row))
+        # The + 1 for the column value for favorited because we extending the
+        # matrix by 2 columns and this happens to be the second column of the
+        # additions
+        cols = scipy.concatenate((
+            feature_vector_coo.col,
+            retweet_coo.col+feature_vector_coo.shape[1],
+            favorited_coo.col+(feature_vector_coo.shape[1] + 1),
+            time_coo.col + (feature_vector_coo.shape[1] + 2)))
+
+        # +2 is again for same reason, we are adding 2 columns.
+        feature_vector = scipy.sparse.coo_matrix(
+            (data, (rows, cols)), shape=(feature_vector_coo.shape[0],
+            feature_vector_coo.shape[1]+3))
+
+        # Convert it back to CSR for efficient computation on sparse matrices.
+        feature_vector = feature_vector.tocsr()
 
         return (classification_vector, feature_vector)
 
