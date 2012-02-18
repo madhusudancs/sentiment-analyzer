@@ -32,9 +32,12 @@ as JSON.
 
 import codecs
 import csv
+import datetime
 import json
 import numpy
 import os
+
+from email import utils
 
 
 class UTF8Recoder(object):
@@ -92,17 +95,20 @@ def parse_training_corpus(corpus_file):
     reader.next()
 
     classification = []
+    date_time = []
     tweets = []
     retweets = []
     favorited = []
 
     for row in reader:
         classification.append(row[1])
+        date_time.append(datetime.datetime(
+            *utils.parsedate_tz(row[3])[:7]))
         tweets.append(row[4])
-        retweets.append([1 if row[5] else 0])
-        favorited.append([1 if row[6] else 0])
+        retweets.append(1 if row[5] else 0)
+        favorited.append(1 if row[6] else 0)
 
-    return classification, tweets, retweets, favorited
+    return classification, date_time, tweets, retweets, favorited
 
 
 def parse_imdb_corpus(directory):
