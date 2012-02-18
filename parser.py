@@ -162,6 +162,3 @@ def append_tweetID(corpus_file):
             row.append(v['retweet_count'])
             row.append(v['favorited'])
             writer.writerow(row)
-
-
-append_tweetID('/media/python/workspace/sentiment-analyzer/data/full-corpus.csv')
