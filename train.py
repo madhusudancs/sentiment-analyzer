@@ -15,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
+import string
 import argparse
 import cProfile
 import datetime
@@ -63,18 +63,18 @@ class Trainer(object):
         """Initializes all types of training data we have.
         """
         corpus_file = open(
-            '/media/python/workspace/sentiment-analyzer/data/full-corpus.csv')
+            '/Users/shobhitns/sentiment-analyzer/full-corpus.csv')
 
         classification, date_time, tweets, retweets, favorited = \
             parse_training_corpus(corpus_file)
 
         reviews_positive = parse_imdb_corpus(
-            '/media/python/workspace/sentiment-analyzer/data/positive')
+            '/Users/shobhitns/sentiment-analyzer/positive')
         num_postive_reviews = len(reviews_positive)
         class_positive = ['positive'] * num_postive_reviews
 
         reviews_negative = parse_imdb_corpus(
-            '/media/python/workspace/sentiment-analyzer/data/negative')
+            '/Users/shobhitns/sentiment-analyzer/negative')
         num_negative_reviews = len(reviews_negative)
         class_negative = ['negative'] * num_negative_reviews
 
@@ -120,16 +120,19 @@ class Trainer(object):
 
         feature_vector = self.vectorizer.fit_transform(self.data)
 
+        #word_dict_vector = self.build_word_dict()
+
         # Extend the feature vector with time, retweet and favorited
         # information
         time_coo = scipy.sparse.coo_matrix([time_vector]).transpose()
         retweet_coo = scipy.sparse.coo_matrix([self.retweet]).transpose()
         favorited_coo = scipy.sparse.coo_matrix([self.favorited]).transpose()
+        #word_dict_coo = scipy.sparse.coo_matrix([word_dict_vector]).transpose()
         feature_vector_coo = feature_vector.tocoo()
         data = scipy.concatenate((feature_vector_coo.data, retweet_coo.data,
-                                  favorited_coo.data, time_coo.data))
+                      favorited_coo.data, time_coo.data))
         rows = scipy.concatenate((feature_vector_coo.row, retweet_coo.row,
-                                  favorited_coo.row, time_coo.row))
+                      favorited_coo.row, time_coo.row))
         # The + 1 for the column value for favorited because we extending the
         # matrix by 2 columns and this happens to be the second column of the
         # additions
@@ -148,6 +151,40 @@ class Trainer(object):
         feature_vector = feature_vector.tocsr()
 
         return (classification_vector, feature_vector)
+
+
+    def build_word_dict(self):
+        """ Build sentiment dictionary and build vector of 
+            weights for tweets.
+        """
+        fileIn = open('AFINN-96.txt', 'r')
+        wordDict = {}
+        line = fileIn.readline()
+        while line != '':
+            temp = string.split(line, '\t')
+            wordDict[temp[0]] = int(temp[1])
+            line = fileIn.readline()
+        fileIn.close()
+
+        fileIn = open('AFINN-111.txt', 'r')
+        line = fileIn.readline()
+        while line != '':
+            temp = string.split(line, '\t')
+            wordDict[temp[0]] = int(temp[1])
+            line = fileIn.readline()
+        fileIn.close()
+
+        word_dict_vector = []
+        for tweet in self.data:
+            word_list = tweet.split()
+            sum = 0
+            for word in word_list:
+                if word in wordDict.keys():
+                    sum += wordDict[word]    
+            word_dict_vector.append(sum)
+
+        return word_dict_vector
+       
 
     def transform(self, test_data):
         """Performs the transform using the already initialized vectorizer.
