@@ -120,19 +120,19 @@ class Trainer(object):
 
         feature_vector = self.vectorizer.fit_transform(self.data)
 
-        #word_dict_vector = self.build_word_dict()
+        word_dict_vector = self.build_word_dict()
 
         # Extend the feature vector with time, retweet and favorited
         # information
         time_coo = scipy.sparse.coo_matrix([time_vector]).transpose()
         retweet_coo = scipy.sparse.coo_matrix([self.retweet]).transpose()
         favorited_coo = scipy.sparse.coo_matrix([self.favorited]).transpose()
-        #word_dict_coo = scipy.sparse.coo_matrix([word_dict_vector]).transpose()
+        word_dict_coo = scipy.sparse.coo_matrix([word_dict_vector]).transpose()
         feature_vector_coo = feature_vector.tocoo()
         data = scipy.concatenate((feature_vector_coo.data, retweet_coo.data,
-                      favorited_coo.data, time_coo.data))
+                      favorited_coo.data, time_coo.data, word_dict_coo.data))
         rows = scipy.concatenate((feature_vector_coo.row, retweet_coo.row,
-                      favorited_coo.row, time_coo.row))
+                      favorited_coo.row, time_coo.row, word_dict_coo.rows))
         # The + 1 for the column value for favorited because we extending the
         # matrix by 2 columns and this happens to be the second column of the
         # additions
@@ -140,12 +140,13 @@ class Trainer(object):
             feature_vector_coo.col,
             retweet_coo.col+feature_vector_coo.shape[1],
             favorited_coo.col+(feature_vector_coo.shape[1] + 1),
-            time_coo.col + (feature_vector_coo.shape[1] + 2)))
+            time_coo.col + (feature_vector_coo.shape[1] + 2),
+            word_dict_coo + (feature_vector_coo.shape[1] + 3)))
 
         # +2 is again for same reason, we are adding 2 columns.
         feature_vector = scipy.sparse.coo_matrix(
             (data, (rows, cols)), shape=(feature_vector_coo.shape[0],
-            feature_vector_coo.shape[1]+3))
+            feature_vector_coo.shape[1]+4))
 
         # Convert it back to CSR for efficient computation on sparse matrices.
         feature_vector = feature_vector.tocsr()
