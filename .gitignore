@@ -23,3 +23,4 @@
 .\#*
 profiling-data/
 webui/local.py
+*.pickle
