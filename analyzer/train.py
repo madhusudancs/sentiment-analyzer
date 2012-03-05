@@ -16,6 +16,7 @@
 # limitations under the License.
 
 import argparse
+import cPickle
 import cProfile
 import datetime
 import numpy
@@ -190,14 +191,13 @@ class Trainer(object):
             word_dict_vector.append(sum)
 
         return word_dict_vector
-       
 
     def transform(self, test_data):
         """Performs the transform using the already initialized vectorizer.
         """
         feature_vector = self.vectorizer.transform(test_data)
 
-    def train_and_validate(self, mean=False):
+    def train_and_validate(self, mean=False, serialize=False):
         """Trains the SVC with the training data and validates with the test data.
 
         We do a K-Fold cross validation with K = 10.
@@ -217,6 +217,15 @@ class Trainer(object):
         self.scores = cross_validation.cross_val_score(
             self.classifier, feature_vector, classification_vector, cv=10,
             score_func=score_func if not mean else None)
+
+        if serialize:
+            classifier_file = open(os.path.join(
+                datasettings.DATA_DIRECTORY, 'classifier.pickle'), 'wb')
+            cPickle.dump(self.classifier, classifier_file)
+            vectors_file = open(os.path.join(
+                datasettings.DATA_DIRECTORY, 'vectors.pickle'), 'wb')
+            cPickle.dump([self.vectorizer, feature_vector,
+                          classification_vector], vectors_file)
 
         return self.scores
 
@@ -255,6 +264,11 @@ def bootstrap():
     parser.add_argument(
         '-m', '--mean', action='store_true',
         help='Prints the mean accuracies. Cannot be run with -p/-s turned on.')
+    parser.add_argument(
+        '--serialize', action='store_true',
+        help='Serializes the classifier, feature vector and the '
+             'classification vector into the data directory with the same '
+             'names.')
     args = parser.parse_args()
 
     trainer = Trainer()
@@ -264,21 +278,23 @@ def bootstrap():
         if isinstance(args.profile, str):
             cProfile.runctx(
                 'trainer.train_and_validate()',
-                {'trainer': trainer}, {}, args.profile)
+                {'trainer': trainer, 'serialize': args.serialize},
+                {}, args.profile)
             print 'Profile stored in %s' % args.profile
         else:
             cProfile.runctx(
                 'trainer.train_and_validate()',
-                {'trainer': trainer}, {}, args.profile)
+                {'trainer': trainer, 'serialize': args.serialize},
+                {}, args.profile)
     else:
-        scores = trainer.train_and_validate(mean=args.mean)
+        scores = trainer.train_and_validate(mean=args.mean,
+                                            serialize=args.serialize)
         if args.mean:
           trainer.build_ui(mean=True)
         if args.scores:
             trainer.build_ui()
 
         return scores
-
 
 if __name__ == '__main__':
     scores = bootstrap()
