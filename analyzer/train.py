@@ -15,12 +15,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import string
 import argparse
 import cProfile
 import datetime
 import numpy
+import os
 import scipy
+import string
 
 from sklearn import cross_validation
 from sklearn import metrics
@@ -28,8 +29,9 @@ from sklearn import svm
 from sklearn import naive_bayes
 from sklearn.feature_extraction.text import Vectorizer
 
-from parser import parse_imdb_corpus
-from parser import parse_training_corpus
+
+from analyzer.parser import parse_imdb_corpus
+from analyzer.parser import parse_training_corpus
 
 
 class Trainer(object):
