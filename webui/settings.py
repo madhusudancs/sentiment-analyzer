@@ -15,10 +15,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 """Django settings for webui project.
 """
 
+
+import os
 
 from local import *
 #DATABASES = {
@@ -32,6 +33,7 @@ from local import *
 #    }
 #}
 
+WEBUI_ROOT = os.path.dirname(__file__)
 
 # If you set this to False, Django will make some optimizations so as not
 # to load the internationalization machinery.
@@ -47,7 +49,7 @@ LANGUAGE_CODE = 'en-us'
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 # Example: "/home/media/media.lawrence.com/media/"
-MEDIA_ROOT = '/home/mask/python/cs221/sentiment-analyzer/webui/assets'
+MEDIA_ROOT = os.path.join(WEBUI_ROOT, 'assets')
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash.
@@ -114,7 +116,7 @@ TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
-    "/home/mask/python/cs221/sentiment-analyzer/webui/templates"
+    os.path.join(WEBUI_ROOT, 'templates')
 )
 
 INSTALLED_APPS = (
@@ -123,8 +125,8 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.admin',
     'fatninja',
-    'django.contrib.admin'
     # Uncomment the next line to enable the admin:
     # 'django.contrib.admin',
     # Uncomment the next line to enable admin documentation:
