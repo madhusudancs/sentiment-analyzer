@@ -61,6 +61,8 @@ def index(request):
             return render_to_response(
                 'fatninja/hero.html', RequestContext(request, context))
 
+        context['query'] = query
+
         fetcher = Fetcher()
         results = fetcher.fetch(query, start_page=1, num_pages=10)
 
