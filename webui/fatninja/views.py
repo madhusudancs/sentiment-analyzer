@@ -21,6 +21,7 @@
 
 import cPickle
 import datetime
+import email
 import os
 import urllib
 
@@ -64,9 +65,14 @@ def index(request):
         results = fetcher.fetch(query, start_page=1, num_pages=10)
 
         fetched_tweets = []
+        tweets_date = []
+        tweets_user = []
         for result in results:
             for tweet in result['results']:
                 fetched_tweets.append(tweet['text'])
+                tweets_date.append(datetime.datetime(
+                    *email.utils.parsedate_tz(tweet['created_at'])[:7]))
+                tweets_user.append(tweet['from_user'])
 
         classifier_file = open(os.path.join(datasettings.DATA_DIRECTORY,
                                             'classifier.pickle'))
@@ -75,8 +81,15 @@ def index(request):
                                             'vectorizer.pickle'))
         vectorizer = cPickle.load(vectorizer_file)
         tweets_vector = vectorizer.transform(fetched_tweets)
-        prediction = classifiers[0].predict(tweets_vector) + classifiers[1].predict(tweet_vector) + classifiers[2].predict(tweet_vector)
+        classified = (classifiers[0].predict(tweets_vector)
+            + classifiers[1].predict(tweet_vector)
+            + classifiers[2].predict(tweet_vector))
 
+        context['classified_information'] = []
+        for tweet, user, date, classification in zip(
+          fetched_tweets, tweets_user, tweets_date, classified):
+            context['classified_information'].append(
+                (tweet, user, date, classification))
 
     return render_to_response(
         'fatninja/hero.html', RequestContext(request, context))

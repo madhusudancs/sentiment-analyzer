@@ -66,24 +66,19 @@
       </form>
       </div>
 
-      <!-- Example row of columns -->
-      <div class="row">
-        <div class="span4">
-        <!--  <h2>Heading</h2>
-           <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
-          <p><a class="btn" href="#">View details &raquo;</a></p> -->
-        </div>
-        <div class="span4">
-        <!--  <h2>Heading</h2>
-           <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p> 
-          <p><a class="btn" href="#">View details &raquo;</a></p> -->
-       </div>
-        <div class="span4">
-          <h2></h2>
-          <p></p>
-          <!--<p><a class="btn" href="#">View details &raquo;</a></p> -->
-        </div>
-      </div>
+      <section id="gridSystem">
+        <!-- Example row of columns -->
+        {% for tweet, user, date, classification in classified_information %}
+            <div class="row show-grid">
+              <div class="span12">
+                <div class="alert alert{% if classification == -1 %}-error{% else %}{% if classification == 1%}-success{% endif %}{% endif %}"
+                  <p><strong><a href="https://twitter.com/#!/{{ user }}">{{ user }}</a></strong> {{ tweet }}</p>
+                  {{ date }}
+                </div>
+              </div>
+            </div>
+        {% endfor %}
+      </section>
 
       <section id = lines> <hr> </section>
       <section id = footer>
