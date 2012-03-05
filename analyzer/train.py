@@ -225,11 +225,25 @@ class Trainer(object):
         # self.scores = cross_validation.cross_val_score(
         #    self.classifier, feature_vector, classification_vector, cv=10,
         #    score_func=score_func if not mean else None)
-       
-        self.classifier1.fit(classification_vector, feature_vector)
-        self.classifier2.fit(classification_vector, feature_vector)           
-        self.classifier3.fit(classification_vector, feature_vector)
+        feature_vector = feature_vector[:6500,:]
+        test_feature_vector = feature_vector[6500:,:]
+
+        classification_vector = classifier_file[:6500]
+        test_classification_vector  = classifier_file[6500:]
  
+        self.classifier1.fit(feature_vector, classification_vector)
+        self.classifier2.fit(feature_vector, classification_vector)
+        self.classifier3.fit(feature_vector, classification_vector)
+ 
+	classification1 = self.classifier1.predict(test_feature_vector)
+        classification2 = self.classifier2.predict(test_feature_vector)
+        classification3 = self.classifier3.predict(test_feature_vector)
+
+        classification = []
+        for predictions in zip(classification1, classification2, classification3):
+            classification.append(max(predictions.count(0), predictions.count(1), predictions.count(-1)))
+
+        self.scores = score_func(test_classification_vector, classification)
 
         if serialize:
             classifier_file = open(os.path.join(
@@ -240,7 +254,7 @@ class Trainer(object):
             cPickle.dump([self.vectorizer, feature_vector,
                           classification_vector], vectors_file)
 
-       # return self.scores
+        return self.scores
 
     def build_ui(self, mean=False):
         """Prints out all the scores calculated.
