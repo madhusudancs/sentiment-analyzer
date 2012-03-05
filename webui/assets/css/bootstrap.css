@@ -110,7 +110,7 @@ body {
   font-size: 13px;
   line-height: 18px;
   color: #333333;
-  background-color: #A9A9A9;
+  background-color: #FFFFFF;
 }
 a {
   color: #0088cc;
@@ -3506,13 +3506,15 @@ a.thumbnail:hover {
    bottom:20px;
    height:10px;
    width:100%;
-   border-top: 1px solid #000;
+   border-top: 1px solid #eeeeee;
 }
 #footer {
    position:fixed;
    left:0px;
-   bottom:0px;
+   bottom:4px;
    height:20px;
    width:100%;
-   background:#FFF;
+   background: #ffffff;
+   color: #666666;
+   text-align: center;
 }
