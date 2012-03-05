@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>Bootstrap, from Twitter</title>
+    <title>Sentiment Analyzer</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
@@ -39,75 +39,79 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </a>
-          <a class="brand" href="#">Project name</a>
+          <a class="brand" href="#">Sentiment Analyzer</a>
           <div class="nav-collapse">
             <ul class="nav">
               <li class="active"><a href="#">Home</a></li>
-              <li><a href="#about">About</a></li>
-              <li><a href="#contact">Contact</a></li>
             </ul>
           </div><!--/.nav-collapse -->
+          {% if classified_information %}
+            <form class="navbar-search pull-right" action="">
+            <!-- <div class="input-prepend" align = "Right"> -->
+            <!--<input type="search" class="span3" placeholder="Search" name="search" id="search" /> -->
+              <input class="search-query span2" type="text" placeholder="Search">
+            </form>
+          {% endif %}
+         </div>
         </div>
       </div>
     </div>
 
     <div class="container">
-      <form action="" method="POST"> 
-      {% csrf_token %}
-      <!-- Main hero unit for a primary marketing message or call to action -->
-      <div class="hero-unit">
-        <h2 align = Center>Twitter Sentiment Analysis</h2>
-        <p>
+      {% if not classified_information %}
+        <form action="" method="POST">
+        {% csrf_token %}
+        <!-- Main hero unit for a primary marketing message or call to action -->
+        <div class="hero-unit">
+          <h2 align = Center>Twitter Sentiment Analysis</h2>
+          <p>
 
-        </p>
-        <p align = Center><input type="text" name="query" rows="1" cols="10" autofocus /></p>
-        <p><button type="submit" class="btn btn-primary btn-large pull-right">Search &raquo;</button></p>
-      </form>
-      </div>
-
-      <!-- Example row of columns -->
-      <div class="row">
-        <div class="span4">
-        <!--  <h2>Heading</h2>
-           <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
-          <p><a class="btn" href="#">View details &raquo;</a></p> -->
+          </p>
+          <p align = Center><input type="search" class="span3" placeholder="Search" name="search" id="search" autofocus /> </p>
+          <!-- <p align = Center><input type="text" name="query" rows="1" cols="10" autofocus /></p> -->
+          <p><button type="submit" class="btn btn-primary btn-large pull-right">Search &raquo;</button></p>
+        </form>
         </div>
-        <div class="span4">
-        <!--  <h2>Heading</h2>
-           <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p> 
-          <p><a class="btn" href="#">View details &raquo;</a></p> -->
-       </div>
-        <div class="span4">
-          <h2></h2>
-          <p></p>
-          <!--<p><a class="btn" href="#">View details &raquo;</a></p> -->
-        </div>
-      </div>
-
-      <hr>
-
-      <footer>
-        <p>&copy;Chee-Bhit-Jay</p>
-      </footer>
+      {% else %}
+        <section id="gridSystem">
+          <!-- Example row of columns -->
+          {% for tweet, user, date, classification in classified_information %}
+              <div class="row show-grid">
+                <div class="span12">
+                  <div class="alert alert{% if classification == -1 %}-error{% else %}{% if classification == 1%}-success{% endif %}{% endif %}"
+                    <p><strong><a href="https://twitter.com/#!/{{ user }}">{{ user }}</a></strong> {{ tweet }}</p>
+                    {{ date }} UTC
+                  </div>
+                </div>
+              </div>
+          {% endfor %}
+        </section>
+      {% endif %}
+      <section id = lines> <hr> </section>
+      <section id = footer>
+       <div>
+        <p>&copy; Copyright 2012 Ajay Narayan, Madhusudan C.S., Shobhit N.S.</p>
+       <div> 
+      </section>
 
     </div> <!-- /container -->
 
     <!-- Le javascript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-    <script src="../../assets/js/jquery.js"></script>
-    <script src="../../assets/js/bootstrap-transition.js"></script>
-    <script src="../../assets/js/bootstrap-alert.js"></script>
-    <script src="../../assets/js/bootstrap-modal.js"></script>
-    <script src="../../assets/js/bootstrap-dropdown.js"></script>
-    <script src="../../assets/js/bootstrap-scrollspy.js"></script>
-    <script src="../../assets/js/bootstrap-tab.js"></script>
-    <script src="../../assets/js/bootstrap-tooltip.js"></script>
-    <script src="../../assets/js/bootstrap-popover.js"></script>
-    <script src="../../assets/js/bootstrap-button.js"></script>
-    <script src="../../assets/js/bootstrap-collapse.js"></script>
-    <script src="../../assets/js/bootstrap-carousel.js"></script>
-    <script src="../../assets/js/bootstrap-typeahead.js"></script>
+    <script src="/assets/js/jquery.js"></script>
+    <script src="/assets/js/bootstrap-transition.js"></script>
+    <script src="/assets/js/bootstrap-alert.js"></script>
+    <script src="/assets/js/bootstrap-modal.js"></script>
+    <script src="/assets/js/bootstrap-dropdown.js"></script>
+    <script src="/assets/js/bootstrap-scrollspy.js"></script>
+    <script src="/assets/js/bootstrap-tab.js"></script>
+    <script src="/assets/js/bootstrap-tooltip.js"></script>
+    <script src="/assets/js/bootstrap-popover.js"></script>
+    <script src="/assets/js/bootstrap-button.js"></script>
+    <script src="/assets/js/bootstrap-collapse.js"></script>
+    <script src="/assets/js/bootstrap-carousel.js"></script>
+    <script src="/assets/js/bootstrap-typeahead.js"></script>
 
   </body>
 </html>

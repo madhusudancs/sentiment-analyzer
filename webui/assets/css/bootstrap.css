@@ -110,7 +110,7 @@ body {
   font-size: 13px;
   line-height: 18px;
   color: #333333;
-  background-color: #A9A9A9;
+  background-color: #FFFFFF;
 }
 a {
   color: #0088cc;
@@ -2572,6 +2572,14 @@ button.btn.small, input[type="submit"].btn.small {
   margin-top: 6px;
   margin-bottom: 0;
 }
+
+.search-query {
+    border-radius: 14px 14px 14px 14px;
+    margin-bottom: 0;
+    padding-left: 14px;
+    padding-right: 14px;
+}
+
 .navbar-search .search-query {
   padding: 4px 9px;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -3498,4 +3506,24 @@ a.thumbnail:hover {
 }
 .invisible {
   visibility: hidden;
+}
+
+#lines{
+   position:fixed;
+   left:0px;
+   bottom:20px;
+   height:10px;
+   width:100%;
+   border-top: 1px solid #eeeeee;
+}
+#footer {
+   position:fixed;
+   left:0px;
+   bottom:0px;
+   padding-top: 5px;
+   height:25px;
+   width:100%;
+   background: #ffffff;
+   color: #666666;
+   text-align: center;
 }
