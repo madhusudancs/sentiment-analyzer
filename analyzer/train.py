@@ -83,9 +83,8 @@ class Trainer(object):
         num_negative_reviews = len(reviews_negative)
         class_negative = ['negative'] * num_negative_reviews
 
-        self.data = tweets + reviews_positive + reviews_negative
-        self.classification = (classification + class_positive +
-            class_negative)
+        self.data = tweets
+        self.classification = classification
 
         self.date_time = date_time
         self.retweet = retweets
@@ -125,36 +124,36 @@ class Trainer(object):
 
         feature_vector = self.vectorizer.fit_transform(self.data)
 
-        word_dict_vector = self.build_word_dict()
-
-        # Extend the feature vector with time, retweet and favorited
-        # information
-        time_coo = scipy.sparse.coo_matrix([time_vector]).transpose()
-        retweet_coo = scipy.sparse.coo_matrix([self.retweet]).transpose()
-        favorited_coo = scipy.sparse.coo_matrix([self.favorited]).transpose()
-        word_dict_coo = scipy.sparse.coo_matrix([word_dict_vector]).transpose()
-        feature_vector_coo = feature_vector.tocoo()
-        data = scipy.concatenate((feature_vector_coo.data, retweet_coo.data,
-                      favorited_coo.data, time_coo.data, word_dict_coo.data))
-        rows = scipy.concatenate((feature_vector_coo.row, retweet_coo.row,
-                      favorited_coo.row, time_coo.row, word_dict_coo.rows))
-        # The + 1 for the column value for favorited because we extending the
-        # matrix by 2 columns and this happens to be the second column of the
-        # additions
-        cols = scipy.concatenate((
-            feature_vector_coo.col,
-            retweet_coo.col+feature_vector_coo.shape[1],
-            favorited_coo.col+(feature_vector_coo.shape[1] + 1),
-            time_coo.col + (feature_vector_coo.shape[1] + 2),
-            word_dict_coo + (feature_vector_coo.shape[1] + 3)))
-
-        # +2 is again for same reason, we are adding 2 columns.
-        feature_vector = scipy.sparse.coo_matrix(
-            (data, (rows, cols)), shape=(feature_vector_coo.shape[0],
-            feature_vector_coo.shape[1]+4))
-
-        # Convert it back to CSR for efficient computation on sparse matrices.
-        feature_vector = feature_vector.tocsr()
+#        word_dict_vector = self.build_word_dict()
+#
+#        # Extend the feature vector with time, retweet and favorited
+#        # information
+#        time_coo = scipy.sparse.coo_matrix([time_vector]).transpose()
+#        retweet_coo = scipy.sparse.coo_matrix([self.retweet]).transpose()
+#        favorited_coo = scipy.sparse.coo_matrix([self.favorited]).transpose()
+#        word_dict_coo = scipy.sparse.coo_matrix([word_dict_vector]).transpose()
+#        feature_vector_coo = feature_vector.tocoo()
+#        data = scipy.concatenate((feature_vector_coo.data, retweet_coo.data,
+#                      favorited_coo.data, time_coo.data, word_dict_coo.data))
+#        rows = scipy.concatenate((feature_vector_coo.row, retweet_coo.row,
+#                      favorited_coo.row, time_coo.row, word_dict_coo.rows))
+#        # The + 1 for the column value for favorited because we extending the
+#        # matrix by 2 columns and this happens to be the second column of the
+#        # additions
+#        cols = scipy.concatenate((
+#            feature_vector_coo.col,
+#            retweet_coo.col+feature_vector_coo.shape[1],
+#            favorited_coo.col+(feature_vector_coo.shape[1] + 1),
+#            time_coo.col + (feature_vector_coo.shape[1] + 2),
+#            word_dict_coo + (feature_vector_coo.shape[1] + 3)))
+#
+#        # +2 is again for same reason, we are adding 2 columns.
+#        feature_vector = scipy.sparse.coo_matrix(
+#            (data, (rows, cols)), shape=(feature_vector_coo.shape[0],
+#            feature_vector_coo.shape[1]+4))
+#
+#        # Convert it back to CSR for efficient computation on sparse matrices.
+#        feature_vector = feature_vector.tocsr()
 
         return (classification_vector, feature_vector)
 
@@ -206,7 +205,8 @@ class Trainer(object):
 
         self.classifier1 = naive_bayes.MultinomialNB()
         self.classifier2 = naive_bayes.BernoulliNB()
-        self.classifier3 = linearSVC(loss='l2', penalty='l1', C=1000,dual=False, tol=1e-3)
+        self.classifier3 = svm.LinearSVC(loss='l2', penalty='l1',
+                                         C=1000,dual=False, tol=1e-3)
    
         def score_func(true, predicted):
             """Score function for the validation.
@@ -225,30 +225,48 @@ class Trainer(object):
         # self.scores = cross_validation.cross_val_score(
         #    self.classifier, feature_vector, classification_vector, cv=10,
         #    score_func=score_func if not mean else None)
-        feature_vector = feature_vector[:6500,:]
-        test_feature_vector = feature_vector[6500:,:]
 
-        classification_vector = classifier_file[:6500]
-        test_classification_vector  = classifier_file[6500:]
+        train_feature_vector = feature_vector[:5000,:]
+        test_feature_vector = feature_vector[5000:,:]
+
+        train_classification_vector = classification_vector[:5000]
+        test_classification_vector  = classification_vector[5000:]
  
-        self.classifier1.fit(feature_vector, classification_vector)
-        self.classifier2.fit(feature_vector, classification_vector)
-        self.classifier3.fit(feature_vector, classification_vector)
+        self.classifier1.fit(train_feature_vector, train_classification_vector)
+        self.classifier2.fit(train_feature_vector, train_classification_vector)
+        self.classifier3.fit(train_feature_vector, train_classification_vector)
  
-	classification1 = self.classifier1.predict(test_feature_vector)
+        classification1 = self.classifier1.predict(test_feature_vector)
         classification2 = self.classifier2.predict(test_feature_vector)
         classification3 = self.classifier3.predict(test_feature_vector)
 
         classification = []
-        for predictions in zip(classification1, classification2, classification3):
-            classification.append(max(predictions.count(0), predictions.count(1), predictions.count(-1)))
+        for predictions in zip(classification1, classification2,
+                               classification3):
+            neutral_count = predictions.count(0)
+            positive_count = predictions.count(1)
+            negative_count = predictions.count(-1)
+            if (neutral_count == negative_count and
+                negative_count == positive_count):
+                classification.append(0)
+            elif (neutral_count > positive_count and
+                neutral_count > negative_count):
+                classification.append(0)
+            elif (positive_count > neutral_count and
+                positive_count > negative_count):
+                classification.append(1)
+            elif (negative_count > neutral_count and
+                negative_count > positive_count):
+                classification.append(-1)
 
         self.scores = score_func(test_classification_vector, classification)
-
+        diaf
         if serialize:
             classifier_file = open(os.path.join(
                 datasettings.DATA_DIRECTORY, 'classifier.pickle'), 'wb')
-            cPickle.dump([self.classifier1,self.classifier2,self.classifier3], classifier_file)
+            cPickle.dump([self.classifier1,
+                          self.classifier2,
+                          self.classifier3], classifier_file)
             vectors_file = open(os.path.join(
                 datasettings.DATA_DIRECTORY, 'vectors.pickle'), 'wb')
             cPickle.dump([self.vectorizer, feature_vector,
