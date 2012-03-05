@@ -210,7 +210,13 @@ class Trainer(object):
             """Score function for the validation.
             """
             return metrics.precision_recall_fscore_support(
-                true, predicted, pos_label=None, average='macro')
+                true, predicted,
+                pos_label=[
+                    self.SENTIMENT_MAP['positive'],
+                    self.SENTIMENT_MAP['negative'],
+                    self.SENTIMENT_MAP['neutral'],
+                    ],
+                average='macro')
 
         # The value for the keyword argument cv is the K value in the K-Fold cross
         # validation that will be used.
