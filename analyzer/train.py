@@ -15,12 +15,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import string
 import argparse
 import cProfile
 import datetime
 import numpy
+import os
 import scipy
+import string
 
 from sklearn import cross_validation
 from sklearn import metrics
@@ -28,8 +29,10 @@ from sklearn import svm
 from sklearn import naive_bayes
 from sklearn.feature_extraction.text import Vectorizer
 
-from parser import parse_imdb_corpus
-from parser import parse_training_corpus
+import datasettings
+
+from analyzer.parser import parse_imdb_corpus
+from analyzer.parser import parse_training_corpus
 
 
 class Trainer(object):
@@ -62,19 +65,20 @@ class Trainer(object):
     def initialize_training_data(self):
         """Initializes all types of training data we have.
         """
-        corpus_file = open(
-            '/Users/shobhitns/sentiment-analyzer/full-corpus.csv')
+        corpus_file = open(os.path.join(datasettings.DATA_DIRECTORY,
+                                        'full-corpus.csv'))
 
         classification, date_time, tweets, retweets, favorited = \
             parse_training_corpus(corpus_file)
 
         reviews_positive = parse_imdb_corpus(
-            '/Users/shobhitns/sentiment-analyzer/positive')
+            os.path.join(datasettings.DATA_DIRECTORY, 'positive'))
+
         num_postive_reviews = len(reviews_positive)
         class_positive = ['positive'] * num_postive_reviews
 
         reviews_negative = parse_imdb_corpus(
-            '/Users/shobhitns/sentiment-analyzer/negative')
+            os.path.join(datasettings.DATA_DIRECTORY, 'negative'))
         num_negative_reviews = len(reviews_negative)
         class_negative = ['negative'] * num_negative_reviews
 
@@ -153,12 +157,12 @@ class Trainer(object):
 
         return (classification_vector, feature_vector)
 
-
     def build_word_dict(self):
         """ Build sentiment dictionary and build vector of 
             weights for tweets.
         """
-        fileIn = open('AFINN-96.txt', 'r')
+        fileIn = open(os.path.join(datasettings.DATA_DIRECTORY,
+                                   'AFINN-96.txt'))
         wordDict = {}
         line = fileIn.readline()
         while line != '':
@@ -167,7 +171,8 @@ class Trainer(object):
             line = fileIn.readline()
         fileIn.close()
 
-        fileIn = open('AFINN-111.txt', 'r')
+        fileIn = open(os.path.join(datasettings.DATA_DIRECTORY,
+                                   'AFINN-111.txt'))
         line = fileIn.readline()
         while line != '':
             temp = string.split(line, '\t')
