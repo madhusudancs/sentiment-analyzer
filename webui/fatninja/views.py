@@ -76,14 +76,12 @@ def index(request):
 
         classifier_file = open(os.path.join(datasettings.DATA_DIRECTORY,
                                             'classifier.pickle'))
-        classifiers = cPickle.load(classifier_file)
+        classifier = cPickle.load(classifier_file)
         vectorizer_file = open(os.path.join(datasettings.DATA_DIRECTORY,
                                             'vectorizer.pickle'))
         vectorizer = cPickle.load(vectorizer_file)
         tweets_vector = vectorizer.transform(fetched_tweets)
-        classified = (classifiers[0].predict(tweets_vector)
-            + classifiers[1].predict(tweets_vector)
-            + classifiers[2].predict(tweets_vector))
+        classified = (classifier.predict(tweets_vector))
 
         context['classified_information'] = []
         for tweet, user, date, classification in zip(
