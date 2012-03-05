@@ -70,12 +70,12 @@ def index(request):
 
         classifier_file = open(os.path.join(datasettings.DATA_DIRECTORY,
                                             'classifier.pickle'))
-        classifier = cPickle.load(classifier_file)
+        classifiers = cPickle.load(classifier_file)
         vectorizer_file = open(os.path.join(datasettings.DATA_DIRECTORY,
                                             'vectorizer.pickle'))
         vectorizer = cPickle.load(vectorizer_file)
         tweets_vector = vectorizer.transform(fetched_tweets)
-        prediction = classifier.predict(tweets_vector)
+        prediction = classifiers[0].predict(tweets_vector) + classifiers[1].predict(tweet_vector) + classifiers[2].predict(tweet_vector)
 
 
     return render_to_response(
