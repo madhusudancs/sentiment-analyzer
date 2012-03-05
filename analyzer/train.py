@@ -204,8 +204,10 @@ class Trainer(object):
         """
         classification_vector, feature_vector = self.initial_fit()
 
-        self.classifier = naive_bayes.MultinomialNB()
-
+        self.classifier1 = naive_bayes.MultinomialNB()
+        self.classifier2 = naive_bayes.BernoulliNB()
+        self.classifier3 = linearSVC(loss='l2', penalty='l1', C=1000,dual=False, tol=1e-3)
+   
         def score_func(true, predicted):
             """Score function for the validation.
             """
@@ -220,20 +222,25 @@ class Trainer(object):
 
         # The value for the keyword argument cv is the K value in the K-Fold cross
         # validation that will be used.
-        self.scores = cross_validation.cross_val_score(
-            self.classifier, feature_vector, classification_vector, cv=10,
-            score_func=score_func if not mean else None)
+        # self.scores = cross_validation.cross_val_score(
+        #    self.classifier, feature_vector, classification_vector, cv=10,
+        #    score_func=score_func if not mean else None)
+       
+        self.classifier1.fit(classification_vector, feature_vector)
+        self.classifier2.fit(classification_vector, feature_vector)           
+        self.classifier3.fit(classification_vector, feature_vector)
+ 
 
         if serialize:
             classifier_file = open(os.path.join(
                 datasettings.DATA_DIRECTORY, 'classifier.pickle'), 'wb')
-            cPickle.dump(self.classifier, classifier_file)
+            cPickle.dump([self.classifier1,self.classifier2,self.classifier3], classifier_file)
             vectors_file = open(os.path.join(
                 datasettings.DATA_DIRECTORY, 'vectors.pickle'), 'wb')
             cPickle.dump([self.vectorizer, feature_vector,
                           classification_vector], vectors_file)
 
-        return self.scores
+       # return self.scores
 
     def build_ui(self, mean=False):
         """Prints out all the scores calculated.
