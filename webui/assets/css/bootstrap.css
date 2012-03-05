@@ -3500,6 +3500,14 @@ a.thumbnail:hover {
   visibility: hidden;
 }
 
+#lines{
+   position:fixed;
+   left:0px;
+   bottom:20px;
+   height:10px;
+   width:100%;
+   border-top: 1px solid #000;
+}
 #footer {
    position:fixed;
    left:0px;
