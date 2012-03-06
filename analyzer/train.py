@@ -325,8 +325,10 @@ def bootstrap():
     parser.add_argument('-p', '--profile', metavar='Profile', type=str,
                         nargs='?', help='Run the profiler.')
     parser.add_argument(
-        '-s', '--scores', action='store_true',
-        help='Prints the scores. Cannot be run with -p turned on.')
+        '-s', '--scores', metavar = 'Scores', type=int, nargs='?',
+        help='Prints the scores by doing the cross validation with the '
+        'argument passed as the number of folds. Cannot be run with -p '
+        'turned on.')
     parser.add_argument(
         '-m', '--mean', action='store_true',
         help='Prints the mean accuracies. Cannot be run with -p/-s turned on.')
@@ -353,7 +355,8 @@ def bootstrap():
                 {'trainer': trainer, 'serialize': args.serialize},
                 {}, args.profile)
     else:
-        scores = trainer.train_and_validate(mean=args.mean,
+        scores = trainer.train_and_validate(cross_validate=args.scores,
+                                            mean=args.mean,
                                             serialize=args.serialize)
         if args.mean:
           trainer.build_ui(mean=True)
