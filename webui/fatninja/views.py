@@ -83,7 +83,11 @@ def index(request):
                                             'vectorizer.pickle'))
         vectorizer = cPickle.load(vectorizer_file)
         tweets_vector = vectorizer.transform(fetched_tweets)
-        classified = (classifier.predict(tweets_vector))
+        classified = list((classifier.predict(tweets_vector)))
+        context['tweets_classified'] = len(classified)
+        context['positive_count'] = classified.count(1)
+        context['negative_count'] = classified.count(-1)
+        context['neutral_count'] = classified.count(0)
 
         context['classified_information'] = []
         for tweet, user, date, classification in zip(

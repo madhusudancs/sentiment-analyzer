@@ -59,20 +59,36 @@
 
     <div class="container">
       {% if not classified_information %}
-        <form action="" method="POST">
-        {% csrf_token %}
-        <!-- Main hero unit for a primary marketing message or call to action -->
         <div class="hero-unit">
-          <h2 align = Center>Twitter Sentiment Analysis</h2>
-          <p>
+          <form action="" method="POST">
+          {% csrf_token %}
+          <!-- Main hero unit for a primary marketing message or call to action -->
+            <h2 align = Center>Twitter Sentiment Analysis</h2>
+            <p>
 
-          </p>
-          <p align = Center><input type="search" class="span3" placeholder="Search" name="query" id="search" autofocus /> </p>
-          <!-- <p align = Center><input type="text" name="query" rows="1" cols="10" autofocus /></p> -->
-          <p><button type="submit" class="btn btn-primary btn-large pull-right">Search &raquo;</button></p>
-        </form>
+            </p>
+            <p align = Center><input type="search" class="span3" placeholder="Search" name="query" id="search" autofocus /> </p>
+            <!-- <p align = Center><input type="text" name="query" rows="1" cols="10" autofocus /></p> -->
+            <p><button type="submit" class="btn btn-primary btn-large pull-right">Search &raquo;</button></p>
+          </form>
         </div>
       {% else %}
+          <div class="span2">
+            <h2>Tweets Classified</h2>
+            <p align="left"><strong>{{ tweets_classified }}</strong></p>
+          </div>
+          <div class="span2">
+            <h2>Positve Tweets</h2>
+            <p align="left"><strong>{{ positive_count }}</strong></p>
+          </div>
+          <div class="span2">
+            <h2>Negative Tweets</h2>
+            <p align="left"><strong>{{ negative_count }}</strong></p>
+          </div>
+          <div class="span2">
+            <h2>Neutral Tweets</h2>
+            <p align="left"><strong>{{ neutral_count }}</strong></p>
+          </div>
         <section id="gridSystem">
           <!-- Example row of columns -->
           {% for tweet, user, date, classification in classified_information %}
