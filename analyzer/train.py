@@ -29,6 +29,7 @@ from sklearn import metrics
 from sklearn import svm
 from sklearn import naive_bayes
 from sklearn.feature_extraction.text import Vectorizer
+from sklearn.utils import check_arrays
 
 import datasettings
 
@@ -196,81 +197,101 @@ class Trainer(object):
         """
         feature_vector = self.vectorizer.transform(test_data)
 
-    def train_and_validate(self, mean=False, serialize=False):
+    def score_func(self, true, predicted):
+        """Score function for the validation.
+        """
+        return metrics.precision_recall_fscore_support(
+            true, predicted,
+            pos_label=[
+                self.SENTIMENT_MAP['positive'],
+                self.SENTIMENT_MAP['negative'],
+                self.SENTIMENT_MAP['neutral'],
+                ],
+            average='macro')
+
+    def cross_validate(self, k=10):
+        """Performs a k-fold cross validation of our training data.
+
+        Args:
+            k: The number of folds for cross validation.
+        """
+        self.scores = []
+
+        X, y = check_arrays(self.feature_vector,
+                            self.classification_vector,
+                            sparse_format='csr')
+        cv = cross_validation.check_cv(
+            k, self.feature_vector, self.classification_vector,
+            classifier=True)
+
+        for train, test in cv:
+            self.classifier1.fit(self.feature_vector[train],
+                          self.classification_vector[train])
+            self.classifier2.fit(self.feature_vector[train],
+                          self.classification_vector[train])
+            self.classifier3.fit(self.feature_vector[train],
+                          self.classification_vector[train])
+            classification1 = self.classifier1.predict(
+                self.feature_vector[test])
+            classification2 = self.classifier2.predict(
+                self.feature_vector[test])
+            classification3 = self.classifier3.predict(
+                self.feature_vector[test])
+
+            classification = []
+            for predictions in zip(classification1, classification2,
+                                   classification3):
+                neutral_count = predictions.count(0)
+                positive_count = predictions.count(1)
+                negative_count = predictions.count(-1)
+                if (neutral_count == negative_count and
+                    negative_count == positive_count):
+                    classification.append(predictions[0])
+                elif (neutral_count > positive_count and
+                    neutral_count > negative_count):
+                    classification.append(0)
+                elif (positive_count > neutral_count and
+                    positive_count > negative_count):
+                    classification.append(1)
+                elif (negative_count > neutral_count and
+                    negative_count > positive_count):
+                    classification.append(-1)
+            classification = numpy.array(classification)
+
+            self.scores.append(self.score_func(y[test], classification))
+
+    def train_and_validate(self, cross_validate=False, mean=False,
+                           serialize=False):
         """Trains the SVC with the training data and validates with the test data.
 
         We do a K-Fold cross validation with K = 10.
         """
-        classification_vector, feature_vector = self.initial_fit()
+        self.classification_vector, self.feature_vector = self.initial_fit()
 
         self.classifier1 = naive_bayes.MultinomialNB()
         self.classifier2 = naive_bayes.BernoulliNB()
         self.classifier3 = svm.LinearSVC(loss='l2', penalty='l1',
                                          C=1000,dual=False, tol=1e-3)
-   
-        def score_func(true, predicted):
-            """Score function for the validation.
-            """
-            return metrics.precision_recall_fscore_support(
-                true, predicted,
-                pos_label=[
-                    self.SENTIMENT_MAP['positive'],
-                    self.SENTIMENT_MAP['negative'],
-                    self.SENTIMENT_MAP['neutral'],
-                    ],
-                average='macro')
 
-        # The value for the keyword argument cv is the K value in the K-Fold cross
-        # validation that will be used.
-        # self.scores = cross_validation.cross_val_score(
-        #    self.classifier, feature_vector, classification_vector, cv=10,
-        #    score_func=score_func if not mean else None)
+        if cross_validate:
+            self.cross_validate(k=cross_validate)
+        else:
+            self.classifier1.fit(self.feature_vector,
+                                 self.classification_vector)
+            self.classifier2.fit(self.feature_vector,
+                                 self.classification_vector)
+            self.classifier3.fit(self.feature_vector,
+                                 self.classification_vector)
 
-        train_feature_vector = feature_vector[:5000,:]
-        test_feature_vector = feature_vector[5000:,:]
-
-        train_classification_vector = classification_vector[:5000]
-        test_classification_vector  = classification_vector[5000:]
- 
-        self.classifier1.fit(train_feature_vector, train_classification_vector)
-        self.classifier2.fit(train_feature_vector, train_classification_vector)
-        self.classifier3.fit(train_feature_vector, train_classification_vector)
- 
-        classification1 = self.classifier1.predict(test_feature_vector)
-        classification2 = self.classifier2.predict(test_feature_vector)
-        classification3 = self.classifier3.predict(test_feature_vector)
-
-        classification = []
-        for predictions in zip(classification1, classification2,
-                               classification3):
-            neutral_count = predictions.count(0)
-            positive_count = predictions.count(1)
-            negative_count = predictions.count(-1)
-            if (neutral_count == negative_count and
-                negative_count == positive_count):
-                classification.append(0)
-            elif (neutral_count > positive_count and
-                neutral_count > negative_count):
-                classification.append(0)
-            elif (positive_count > neutral_count and
-                positive_count > negative_count):
-                classification.append(1)
-            elif (negative_count > neutral_count and
-                negative_count > positive_count):
-                classification.append(-1)
-
-        self.scores = score_func(test_classification_vector, classification)
-        diaf
         if serialize:
-            classifier_file = open(os.path.join(
-                datasettings.DATA_DIRECTORY, 'classifier.pickle'), 'wb')
+            classifiers_file = open(os.path.join(
+                datasettings.DATA_DIRECTORY, 'classifiers.pickle'), 'wb')
             cPickle.dump([self.classifier1,
                           self.classifier2,
-                          self.classifier3], classifier_file)
-            vectors_file = open(os.path.join(
-                datasettings.DATA_DIRECTORY, 'vectors.pickle'), 'wb')
-            cPickle.dump([self.vectorizer, feature_vector,
-                          classification_vector], vectors_file)
+                          self.classifier3], classifiers_file)
+            vectorizer_file = open(os.path.join(
+                datasettings.DATA_DIRECTORY, 'vectorizer.pickle'), 'wb')
+            cPickle.dump(self.vectorizer, vectorizer_file)
 
         return self.scores
 
