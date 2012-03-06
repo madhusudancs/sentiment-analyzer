@@ -61,6 +61,8 @@ def index(request):
             return render_to_response(
                 'fatninja/hero.html', RequestContext(request, context))
 
+        context['query'] = query
+
         fetcher = Fetcher()
         results = fetcher.fetch(query, start_page=1, num_pages=10)
 
@@ -76,14 +78,16 @@ def index(request):
 
         classifier_file = open(os.path.join(datasettings.DATA_DIRECTORY,
                                             'classifier.pickle'))
-        classifiers = cPickle.load(classifier_file)
+        classifier = cPickle.load(classifier_file)
         vectorizer_file = open(os.path.join(datasettings.DATA_DIRECTORY,
                                             'vectorizer.pickle'))
         vectorizer = cPickle.load(vectorizer_file)
         tweets_vector = vectorizer.transform(fetched_tweets)
-        classified = (classifiers[0].predict(tweets_vector)
-            + classifiers[1].predict(tweets_vector)
-            + classifiers[2].predict(tweets_vector))
+        classified = list((classifier.predict(tweets_vector)))
+        context['tweets_classified'] = len(classified)
+        context['positive_count'] = classified.count(1)
+        context['negative_count'] = classified.count(-1)
+        context['neutral_count'] = classified.count(0)
 
         context['classified_information'] = []
         for tweet, user, date, classification in zip(
