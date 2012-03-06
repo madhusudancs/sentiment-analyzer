@@ -97,7 +97,7 @@
                 <div class="span12">
                   <div class="alert alert{% if classification == -1 %}-error{% else %}{% if classification == 1%}-success{% endif %}{% endif %}"
                     <p><strong><a href="https://twitter.com/#!/{{ user }}">{{ user }}</a></strong> {{ tweet }}</p>
-                    {{ date }} UTC
+                    {{ date|timesince }} ago
                   </div>
                 </div>
               </div>
