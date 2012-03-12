@@ -36,8 +36,22 @@ def map(page,params):
     
 def reduce(iter, params):
     from disco.util import kvgroup
+
+    vectorizer_file = open(os.path.join(datasettings.DATA_DIRECTORY, 'vectorizer.pickle'))
+    vectorizer = cPickle.load(vectorizer_file)
+
     for word, counts in kvgroup(sorted(iter)):
-        yield word, sum(counts)
+        j = vectorizer.vocabulary.get(word)
+        if j is not None:
+            newDict = {}
+            for docID, count in countTupleList:
+                if docID not in newDict.keys():
+                    newDict[docID] = count
+                else:
+                    newDict[docID] += count
+            yield word, newDict
+        else:
+            yield None, None
         
         
 if __name__ == '__main__':
