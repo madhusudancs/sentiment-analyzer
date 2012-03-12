@@ -81,10 +81,16 @@
           <div class="span2">
             <h2>Positve Tweets</h2>
             <p align="left"><strong>{{ positive_count }}</strong></p>
+            <div class="progress">
+             <div class="bar" style="width:{% widthratio  positive_count tweets_classified 100 %}%;"></div>
+            </div>
           </div>
           <div class="span2">
             <h2>Negative Tweets</h2>
             <p align="left"><strong>{{ negative_count }}</strong></p>
+            <div class="progress progress-danger">
+               <div class="bar" style="width:{% widthratio  negative_count tweets_classified 100 %}%"> </div>
+            </div>
           </div>
           <div class="span2">
             <h2>Neutral Tweets</h2>
@@ -107,7 +113,7 @@
       <section id = lines> <hr> </section>
       <section id = footer>
        <div>
-        <p>&copy; Copyright 2012 Ajay Narayan, Madhusudan C.S., Shobhit N.S.</p>
+        <p>University of California, Irvine &copy; Copyright 2012 Ajay Narayan, Madhusudan C.S., Shobhit N.S.</p>
        <div> 
       </section>
 

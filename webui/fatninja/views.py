@@ -24,6 +24,7 @@ import datetime
 import email
 import os
 import urllib
+import numpy
 
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse
@@ -76,22 +77,45 @@ def index(request):
                     *email.utils.parsedate_tz(tweet['created_at'])[:7]))
                 tweets_user.append(tweet['from_user'])
 
-        classifier_file = open(os.path.join(datasettings.DATA_DIRECTORY,
-                                            'classifier.pickle'))
-        classifier = cPickle.load(classifier_file)
+        classifiers_file = open(os.path.join(datasettings.DATA_DIRECTORY,
+                                            'classifiers.pickle'))
+        classifiers = cPickle.load(classifiers_file)
         vectorizer_file = open(os.path.join(datasettings.DATA_DIRECTORY,
                                             'vectorizer.pickle'))
         vectorizer = cPickle.load(vectorizer_file)
         tweets_vector = vectorizer.transform(fetched_tweets)
-        classified = list((classifier.predict(tweets_vector)))
-        context['tweets_classified'] = len(classified)
-        context['positive_count'] = classified.count(1)
-        context['negative_count'] = classified.count(-1)
-        context['neutral_count'] = classified.count(0)
+        classified1 = list(classifiers[0].predict(tweets_vector))
+        classified2 = list(classifiers[1].predict(tweets_vector))
+        classified3 = list(classifiers[2].predict(tweets_vector))
 
+        
+        classified = []
+     #   for predictions in list(classified1): #zip(classified1, classified2, classified3):
+     #           neutral_count = predictions.count(0)
+     #           positive_count = predictions.count(1)
+     ##           negative_count = predictions.count(-1)
+     #           if (neutral_count == negative_count and
+     ##               negative_count == positive_count):
+      #              classified.append(predictions[0])
+      #          elif (neutral_count > positive_count and
+      #              neutral_count > negative_count):
+      ##              classified.append(0)
+       #         elif (positive_count > neutral_count and
+     #               positive_count > negative_count):
+     #               classified.append(1)
+     #           elif (negative_count > neutral_count and
+     #               negative_count > positive_count):
+     #               classified.append(-1)
+
+        #classified = numpy.array(classified)
+        context['tweets_classified'] = len(classified3)
+        context['positive_count'] = classified2.count(1)
+        context['negative_count'] = classified2.count(-1)
+        context['neutral_count'] = classified2.count(0)
+        
         context['classified_information'] = []
         for tweet, user, date, classification in zip(
-          fetched_tweets, tweets_user, tweets_date, classified):
+          fetched_tweets, tweets_user, tweets_date, classified1):
             context['classified_information'].append(
                 (tweet, user, date, classification))
 
