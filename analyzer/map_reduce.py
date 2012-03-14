@@ -19,11 +19,6 @@
 import cPickle
 import os
 
-from disco.core import Job
-from disco.core import Params
-from disco.func import chain_reader
-
-
 import datasettings
 
 from vectorizer import Vectorizer
@@ -45,6 +40,7 @@ def mapper(page, params):
     import requests
 
     trained_vectorizer = params.trained_vectorizer
+
     try:
         r = requests.get(
             'http://search.twitter.com/search.json',
@@ -53,7 +49,11 @@ def mapper(page, params):
             r.text.decode(trained_vectorizer.charset,
                           trained_vectorizer.charset_error))
         tweets = page_of_tweets.get('results')
+
         if not tweets:
+          print ('No tweets were fetched in this mapper with page '
+              'number %s.' % (page))
+          print 'HTTP status was: ', r.status_code
           return
 
         for tweet in tweets:
@@ -62,10 +62,10 @@ def mapper(page, params):
             analyze = trained_vectorizer.build_analyzer()
             tokens = analyze(tweet_text)
             for token in tokens:
-                yield  (u" ".join(token), (tweet_id, 1))
+                yield (token, (tweet_id, 1))
 
     except requests.ConnectionError:
-        pass
+        print "There was a connection error."
 
 
 def reducer(klv, params):
@@ -83,7 +83,8 @@ def reducer(klv, params):
     trained_vectorizer = params.trained_vectorizer
 
     for token, count_tuple_list in kvgroup(sorted(klv)):
-        j = trained_vectorizer.vocabulary_.get(token)
+        token = token.strip()
+        j = trained_vectorizer.vocabulary_.get(''.join(token.split()))
         if j is not None:
             new_dict = {}
             for doc_id, count in count_tuple_list:
@@ -92,26 +93,3 @@ def reducer(klv, params):
                 else:
                     new_dict[doc_id] += count
             yield j, new_dict
-
-
-def bootstrap():
-    """Bootstraps the MapReducer.
-    """
-    path = os.path.join(datasettings.DATA_DIRECTORY, 'buckets.txt')
-    vectorizer_file = open(os.path.join(datasettings.DATA_DIRECTORY,
-                                        'vectorizer.pickle'))
-
-    trained_vectorizer = cPickle.load(vectorizer_file)
-    job = Job()
-    job.run(input=['tag://data:buckets'], map=mapper, reduce=reducer,
-            map_reader=chain_reader, params=Params(query='Apple',
-            trained_vectorizer=trained_vectorizer),
-            required_modules=[('vectorizer',
-                               os.path.join(datasettings.PROJECT_ROOT,
-                                            'analyzer', 'vectorizer.py'),)])
-
-    return trained_vectorizer.build_feature_matrix(job)
-
-
-if __name__ == '__main__':
-    bootstrap()
