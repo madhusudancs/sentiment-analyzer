@@ -146,7 +146,7 @@ def get_tweetID(directory):
     return tweetDict
 
 
-def append_tweetID(corpus_file):
+def append_tweetid(corpus_file):
     tweetDict = get_tweetID('json_data')
 
     encoded_corpus = UTF8Recoder(open(corpus_file), 'utf-8')
@@ -162,5 +162,3 @@ def append_tweetID(corpus_file):
             row.append(v['retweet_count'])
             row.append(v['favorited'])
             writer.writerow(row)
-
-append_tweetID('/Users/shobhitns/sentiment-analyzer/full-corpus.csv')
