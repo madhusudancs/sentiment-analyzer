@@ -49,7 +49,7 @@ def reduce(iter, params):
                     newDict[docID] = count
                 else:
                     newDict[docID] += count
-            yield word, newDict
+            yield j, newDict
         else:
             yield None, None
         
@@ -59,3 +59,26 @@ if __name__ == '__main__':
                     map=map,
                     reduce=reduce)
 
+count = 0
+numCols = 0
+docsDict = {}
+rowsList = []
+colsList = []
+dataList = []
+for word, dict in result_iterator(job.wait(show=True)):
+    numCols += 1
+    for docID, tfidf in dict:
+        if docID not in docsDict:
+            docsDict[docID] = count
+            count += 1
+        dataList.append(tfidf)
+        rowsList.append(docsDict[docID])
+        colsList.append(word)
+
+classifier_file = open(os.path.join(datasettings.DATA_DIRECTORY, 'classifier.pickle'))
+classifier = cPickle.load(classifier_file) 
+
+feature_vector = scipy.sparse.coo_matrix(
+            (dataList, (rowsList, colsList)), shape=(count, numCols))
+feature_vector = feature_vector.tocsr() 
+prediction = classifier.predict(feature_vector)
