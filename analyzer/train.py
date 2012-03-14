@@ -28,13 +28,13 @@ from sklearn import cross_validation
 from sklearn import metrics
 from sklearn import svm
 from sklearn import naive_bayes
-from sklearn.feature_extraction.text import Vectorizer
 from sklearn.utils import check_arrays
 
 import datasettings
 
 from analyzer.parser import parse_imdb_corpus
 from analyzer.parser import parse_training_corpus
+from vectorizer import Vectorizer
 
 
 class Trainer(object):
