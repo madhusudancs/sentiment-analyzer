@@ -19,19 +19,62 @@
 """
 
 
-from django.db import models
+import datetime
 
-# Create your models here.
-#Tweet table : Holds the tweet text and meta data information.
+from email import utils
 
-class Tweet(models.Model):
-      tweet_text  = models.CharField(max_length=140)
-      tweet_stamp = models.DateTimeField('Tweet Stamp')
-      def __unicode__(self):
-          return self.tweet_text      
+import mongoengine
 
-class MetaData(models.Model):
-      search_key   = models.CharField(max_length = 30)
-      search_stamp = models.DateTimeField('Query Stamp') 
-      def __unicode__(self):
-          return self.search_key
+
+mongoengine.connect('sentiment-analyzer')
+
+
+class GeoLocation(mongoengine.EmbeddedDocument):
+    """Holds the geo-coordinates.
+    """
+    latitude = mongoengine.FloatField()
+    longtitude = mongoengine.FloatField()
+
+
+class Tweet(mongoengine.Document):
+    """Holds the tweet related information.
+    """
+    def __init__(self, *args, **kwargs):
+        """Construct the tweet object.
+        """
+        if ('created_at' in kwargs and not isinstance(
+          kwargs['created_at'], datetime.datetime)):
+            kwargs['created_at'] = datetime.datetime(*utils.parsedate_tz(
+                kwargs['created_at'])[:7])
+
+        super(Tweet, self).__init__(*args, **kwargs)
+        self.id_str = str(self.id_str)
+
+    created_at = mongoengine.DateTimeField()
+    from_user = mongoengine.StringField()
+    from_user_id = mongoengine.IntField()
+    from_user_id_str = mongoengine.StringField()
+    from_user_name = mongoengine.StringField()
+    geo = mongoengine.DictField(required=False)
+    id_str = mongoengine.StringField(primary_key=True)
+    in_reply_to_status_id = mongoengine.IntField(required=False)
+    in_reply_to_status_id_str = mongoengine.StringField(max_length=1024,
+                                                        required=False)
+    iso_language_code = mongoengine.StringField(max_length=10)
+    metadata = mongoengine.DictField()
+    profile_image_url = mongoengine.URLField()
+    profile_image_url_https = mongoengine.URLField()
+    source = mongoengine.StringField()
+    text = mongoengine.StringField()
+    to_user = mongoengine.StringField(required=False)
+    mongoengine.StringField(max_length=140)
+    to_user_id = mongoengine.IntField(required=False)
+    to_user_id_str = mongoengine.StringField(required=False)
+    to_user_name = mongoengine.StringField(required=False)
+
+
+class FetchMetaData(mongoengine.Document):
+    query_data = mongoengine.DictField()
+    searched_at = mongoengine.DateTimeField()
+    tweets = mongoengine.ListField(mongoengine.ReferenceField(Tweet))
+
