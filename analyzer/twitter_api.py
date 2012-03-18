@@ -46,14 +46,6 @@ class CustomStreamListener(tweepy.StreamListener):
         return True # Don't kill the stream
 
 
-#def main():
-    # Create a streaming API and set a timeout value of 60 seconds.
-#    streaming_api = tweepy.streaming.Stream(auth, CustomStreamListener(), timeout=60)
-#
-#    print >> sys.stderr, 'Filtering the public timeline for "%s"' % (' '.join(sys.argv[1:]),)
-#
-#    streaming_api.filter(follow=None, track=Q)
-
 class Fetcher(object):
     """Abstracts the twitter API.
     """
@@ -107,29 +99,10 @@ class Fetcher(object):
 
 def main():
     threads = []
-#    for i in range(25):
-#        t = threading.Thread(target=fetch, args=(i + 1 + 1350,'Oscar'))
-#        time.sleep(1)
-#        threads.append(t)
-#        t.start()
-#    for i in range(25):
-#        t = threading.Thread(target=fetch, args=(i + 1 + 1321, 'Apple'))
-#        time.sleep(1)
-#        threads.append(t)
-#        t.start()
-#    for i in range(25):
-#        t = threading.Thread(target=fetch, args=(i + 1 + 1275, 'Microsoft'))
-#        time.sleep(1)
-#        threads.append(t)
-#        t.start()
-#    for i in range(25):
-#        t = threading.Thread(target=fetch, args=(i + 1 + 1270, 'Google'))
-#        time.sleep(1)
-#        threads.append(t)
-#        t.start()
     for i in range(100):
         t = threading.Thread(target=fetch, args=(i + 1 + 1270, 'fail'))
         time.sleep(1)
         threads.append(t)
         t.start()
     return
+
