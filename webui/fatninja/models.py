@@ -72,6 +72,9 @@ class Tweet(mongoengine.Document):
     to_user_id_str = mongoengine.StringField(required=False)
     to_user_name = mongoengine.StringField(required=False)
 
+    # 1 is positive, -1 is negative and 0 is neutral
+    sentiment = mongoengine.IntField()
+
 
 class FetchMetaData(mongoengine.Document):
     query_data = mongoengine.DictField()

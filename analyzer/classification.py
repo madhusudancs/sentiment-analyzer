@@ -111,6 +111,8 @@ class Classifier(object):
         for row, prediction in enumerate(self.prediction):
             tweet = models.Tweet.objects.with_id(
                 str(self.row_num_to_tweet_id_map[row]))
+            tweet.sentiment = prediction
+            tweet.save()
             print '%s: %s' % (REVERSE_SENTIMENT_MAP[prediction], tweet.text)
 
         print "Positive count: %d" % (self.prediction.count(1))
