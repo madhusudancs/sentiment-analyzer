@@ -98,12 +98,12 @@
           </div>
         <section id="gridSystem">
           <!-- Example row of columns -->
-          {% for tweet, user, date, classification in classified_information %}
+          {% for tweet_id, tweet in classified_information.items %}
               <div class="row show-grid">
                 <div class="span12">
-                  <div class="alert alert{% if classification == -1 %}-error{% else %}{% if classification == 1%}-success{% endif %}{% endif %}"
-                    <p><strong><a href="https://twitter.com/#!/{{ user }}">{{ user }}</a></strong> {{ tweet }}</p>
-                    {{ date|timesince }} ago
+                  <div class="alert alert{% if tweet.sentiment == -1 %}-error{% else %}{% if tweet.sentiment == 1 %}-success{% endif %}{% endif %}"
+                    <p><strong><a href="https://twitter.com/#!/{{ user }}">{{ tweet.user }}</a></strong> {{ tweet.text }}</p>
+                    {{ tweet.date|timesince }} ago
                   </div>
                 </div>
               </div>
