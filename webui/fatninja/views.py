@@ -84,7 +84,7 @@ def index(request):
                                             'vectorizer.pickle'))
         vectorizer = cPickle.load(vectorizer_file)
         tweets_vector = vectorizer.transform(fetched_tweets)
-        classified = classifier.predict(tweets_vector)
+        classified = list(classifier.predict(tweets_vector))
 
 
         context['tweets_classified'] = len(classified)
