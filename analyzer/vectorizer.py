@@ -51,26 +51,32 @@ class Vectorizer(TfidfVectorizer):
         Args:
             job: The disco MapReduce job.
         """
+        self.docs_to_row_num_map = {}
+        self.row_num_to_docs_map = {}
+
         row_count = 0
-        docs_to_row_num_map = {}
+
         data = []
         rows = []
         cols = []
         for token_column, doc_count_dict in result_iterator(
           job.wait(show=True)):
             for doc_id, count in doc_count_dict.items():
-                if doc_id not in docs_to_row_num_map:
-                    docs_to_row_num_map[doc_id] = row_count
+                if doc_id not in self.docs_to_row_num_map:
+                    self.docs_to_row_num_map[doc_id] = row_count
+                    self.row_num_to_docs_map[row_count] = doc_id
                     row_count += 1
 
                 data.append(count)
-                rows.append(docs_to_row_num_map[doc_id])
+                rows.append(self.docs_to_row_num_map[doc_id])
                 cols.append(token_column)
 
-        shape = (len(docs_to_row_num_map),
+        shape = (len(self.docs_to_row_num_map),
                  max(self.vocabulary_.itervalues()) + 1)
 
         feature_vector = scipy.sparse.coo_matrix(
             (data, (rows, cols)), shape=shape)
 
-        return self._tfidf.transform(feature_vector, copy=False)
+        return (self._tfidf.transform(feature_vector, copy=False),
+                self.row_num_to_docs_map)
+
