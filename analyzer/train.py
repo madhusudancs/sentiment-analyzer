@@ -34,19 +34,13 @@ import datasettings
 
 from analyzer.parser import parse_imdb_corpus
 from analyzer.parser import parse_training_corpus
+from vectorizer import SENTIMENT_MAP
 from vectorizer import Vectorizer
 
 
 class Trainer(object):
     """Trains the classifier with training data and does the cross validation.
     """
-
-    SENTIMENT_MAP = {
-        'positive': 1,
-        'negative': -1,
-        'neutral': 0,
-        'irrelevant': 0,
-        }
 
     def __init__(self):
         """Initializes the datastructures required.
@@ -97,8 +91,8 @@ class Trainer(object):
         # We map the sentiments to the values specified in the SENTIMENT_MAP.
         # For any sentiment that is not part of the map we give a value 0.
         classification_vector = numpy.array(map(
-            lambda s: self.SENTIMENT_MAP.get(s.lower(), 0),
-                                             self.classification))
+            lambda s: SENTIMENT_MAP.get(s.lower(), 0),
+                                        self.classification))
 
         time_vector = []
         late_night = datetime.time(0, 0, 0)
@@ -203,9 +197,9 @@ class Trainer(object):
         return metrics.precision_recall_fscore_support(
             true, predicted,
             pos_label=[
-                self.SENTIMENT_MAP['positive'],
-                self.SENTIMENT_MAP['negative'],
-                self.SENTIMENT_MAP['neutral'],
+                SENTIMENT_MAP['positive'],
+                SENTIMENT_MAP['negative'],
+                SENTIMENT_MAP['neutral'],
                 ],
             average='macro')
 

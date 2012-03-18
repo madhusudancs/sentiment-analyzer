@@ -24,6 +24,20 @@ from disco.core import result_iterator
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 
+SENTIMENT_MAP = {
+    'positive': 1,
+    'negative': -1,
+    'neutral': 0,
+    'irrelevant': 0,
+    }
+
+REVERSE_SENTIMENT_MAP = {
+    1: 'positive',
+    -1: 'negative',
+    0: 'neutral',
+    }
+
+
 class Vectorizer(TfidfVectorizer):
     """The feature extractor is extended to work Disco MapReduce framework.
 
