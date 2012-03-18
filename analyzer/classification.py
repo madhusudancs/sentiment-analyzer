@@ -27,6 +27,9 @@ import datasettings
 
 from map_reduce import mapper
 from map_reduce import reducer
+from vectorizer import REVERSE_SENTIMENT_MAP
+
+from webui.fatninja import models
 
 
 class Classifier(object):
@@ -45,12 +48,12 @@ class Classifier(object):
 
         vectorizer_file = open(os.path.join(datasettings.DATA_DIRECTORY,
                                             'vectorizer.pickle'))
-        classifier_file = open(os.path.join(datasettings.DATA_DIRECTORY,
-                                            'classifier.pickle'))
+        classifiers_file = open(os.path.join(datasettings.DATA_DIRECTORY,
+                                             'classifiers.pickle'))
 
         self.vectorizer = cPickle.load(vectorizer_file)
 
-        self.classifier = cPickle.load(classifier_file)
+        self.classifiers = cPickle.load(classifiers_file)
 
         # The feature vector for all the tweets fetched from the twitter API.
         self.feature_vector = None
@@ -85,21 +88,34 @@ class Classifier(object):
                     query=self.query,
                     trained_vectorizer=self.vectorizer
                     ),
-                required_modules=[('vectorizer',
-                                   os.path.join(datasettings.PROJECT_ROOT,
-                                                'analyzer',
-                                                'vectorizer.py'),)])
+                required_modules=[
+                    ('vectorizer', os.path.join(datasettings.PROJECT_ROOT,
+                        'analyzer',
+                        'vectorizer.py'),),
+                    ('models', os.path.join(datasettings.PROJECT_ROOT,
+                        'webui', 'fatninja',
+                        'models.py'),),
+                        ])
 
-        self.feature_vector = self.vectorizer.build_feature_matrix(job)
-        print self.feature_vector.shape
+        self.feature_vector, self.row_num_to_tweet_id_map = \
+            self.vectorizer.build_feature_matrix(job)
+
         self.classify()
 
     def classify(self):
         """Calls the classifier and returns the prediction.
         """
         feature_vector = self.feature_vector.tocsr() 
-        self.prediction = self.classifier.predict(feature_vector)
+        self.prediction = list(self.classifiers[1].predict(feature_vector))
 
+        for row, prediction in enumerate(self.prediction):
+            tweet = models.Tweet.objects.with_id(
+                str(self.row_num_to_tweet_id_map[row]))
+            print '%s: %s' % (REVERSE_SENTIMENT_MAP[prediction], tweet.text)
+
+        print "Positive count: %d" % (self.prediction.count(1))
+        print "Negative count: %d" % (self.prediction.count(-1))
+        print "Neutral count: %d" % (self.prediction.count(0))
 
 def bootstrap():
   parser = argparse.ArgumentParser(description='Compiler arguments.')
