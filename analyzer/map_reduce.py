@@ -36,15 +36,32 @@ def mapper(page, params):
         params: The parameter object that holds the map reduce
             initialization parameters. This contains the query string!
     """
+    import datetime
     import json
     import requests
+
+    from email import utils
+    from mongoengine.base import ValidationError
+
+    from models import Tweet
+    from models import GeoLocation
+    from models import FetchMetaData
 
     trained_vectorizer = params.trained_vectorizer
 
     try:
+        fetch_meta_data = FetchMetaData(
+            query_data={
+                'query_terms': params.query,
+                'page': page },
+            searched_at=datetime.datetime.now(),
+            tweets=[]
+            )
         r = requests.get(
             'http://search.twitter.com/search.json',
-            params={'q': params.query, 'rpp': 100, 'page': page})
+            params={'q': params.query, 'rpp': 100, 'page': page,
+                    'lang': 'en'})
+
         page_of_tweets = json.loads(
             r.text.decode(trained_vectorizer.charset,
                           trained_vectorizer.charset_error))
@@ -56,13 +73,27 @@ def mapper(page, params):
           print 'HTTP status was: ', r.status_code
           return
 
+        # List of tweet database object to write to metadata object.
+
+        tweets_saved = []
         for tweet in tweets:
             tweet_text = tweet['text']
             tweet_id = tweet['id']
-            analyze = trained_vectorizer.build_analyzer()
-            tokens = analyze(tweet_text)
-            for token in tokens:
-                yield (token, (tweet_id, 1))
+
+            # Save it in the database.
+            try:
+                tweet_inserted = Tweet(**tweet)
+                tweet_inserted.save()
+                fetch_meta_data.tweets.append(tweet_inserted)
+
+                analyze = trained_vectorizer.build_analyzer()
+                tokens = analyze(tweet_text)
+                for token in tokens:
+                    yield (token, (tweet_id, 1))
+            except ValidationError, e:
+                print e
+
+        fetch_meta_data.save()
 
     except requests.ConnectionError:
         print "There was a connection error."
@@ -93,3 +124,4 @@ def reducer(klv, params):
                 else:
                     new_dict[doc_id] += count
             yield j, new_dict
+
