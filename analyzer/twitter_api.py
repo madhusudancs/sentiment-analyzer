@@ -73,7 +73,8 @@ class Fetcher(object):
         """
         try:
             r = requests.get('http://search.twitter.com/search.json',
-                             params={'q': query, 'rpp': 100, 'page': page})
+                             params={'q': query, 'rpp': 100, 'page': page,
+                                     'lang': 'en'})
             results = json.loads(r.text)
             if results:
                 self.thread_lock.acquire()
