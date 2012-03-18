@@ -21,8 +21,12 @@
 
 from django.contrib import admin
 
-from fatninja.models import Tweet
-from fatninja.models import MetaData
+from mongonaut.sites import MongoAdmin
 
-admin.site.register(Tweet)
-admin.site.register(MetaData)
+from fatninja.models import Tweet
+from fatninja.models import FetchMetaData
+
+
+Tweet.mongoadmin = MongoAdmin()
+FetchMetaData.mongoadmin = MongoAdmin()
+
