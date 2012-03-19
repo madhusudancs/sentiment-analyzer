@@ -208,9 +208,9 @@ clusters with Terabytes of data to know which actually outperforms the other.
 AUTHORS
 -------
 
-Ajay S. Narayan
-Madhusudan.C.S
-Shobhit N.S.
+    * Ajay S. Narayan
+    * Madhusudan.C.S
+    * Shobhit N.S.
 
 
 LICENSE and COPYRIGHT
