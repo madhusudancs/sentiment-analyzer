@@ -64,8 +64,7 @@ class Trainer(object):
         corpus_file = open(os.path.join(datasettings.DATA_DIRECTORY,
                                         'full-corpus.csv'))
 
-        classification, date_time, tweets, retweets, favorited = \
-            parse_training_corpus(corpus_file)
+        classification = parse_training_corpus(corpus_file)
 
         reviews_positive = parse_imdb_corpus(
             os.path.join(datasettings.DATA_DIRECTORY, 'positive'))
@@ -93,29 +92,6 @@ class Trainer(object):
         classification_vector = numpy.array(map(
             lambda s: SENTIMENT_MAP.get(s.lower(), 0),
                                         self.classification))
-
-        time_vector = []
-        late_night = datetime.time(0, 0, 0)
-        morning = datetime.time(6, 0, 0)
-        afternoon = datetime.time(12, 0, 0)
-        evening = datetime.time(16, 0, 0)
-        night = datetime.time(19, 0, 0)
-        night_end = datetime.time(23, 59, 59)
-        for dt in self.date_time:
-            time = dt.time()
-            if late_night <= time < morning:
-                time_map = 0
-            elif morning <= time < afternoon:
-                time_map = 1
-            elif afternoon <= time < evening:
-                time_map = 2
-            elif evening <= time < night:
-                time_map = 3
-            elif night <= time <= night_end:
-                time_map = 4
-
-            time_vector.append(time_map)
-
 
         feature_vector = self.vectorizer.fit_transform(self.data)
 

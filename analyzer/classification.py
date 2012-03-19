@@ -120,7 +120,7 @@ class Classifier(object):
         print "Neutral count: %d" % (self.prediction.count(0))
 
 def bootstrap():
-  parser = argparse.ArgumentParser(description='Compiler arguments.')
+  parser = argparse.ArgumentParser(description='Classifier arguments.')
   parser.add_argument('-q', '--query', metavar="Query", type=str,
                       nargs=1,
                       help='The query that must be used to search for tweets.')

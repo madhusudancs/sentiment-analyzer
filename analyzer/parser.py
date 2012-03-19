@@ -105,8 +105,6 @@ def parse_training_corpus(corpus_file):
         date_time.append(datetime.datetime(
             *utils.parsedate_tz(row[3])[:7]))
         tweets.append(row[4])
-        retweets.append(1 if row[5] else 0)
-        favorited.append(1 if row[6] else 0)
 
     return classification, date_time, tweets, retweets, favorited
 
