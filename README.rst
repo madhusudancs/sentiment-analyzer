@@ -4,7 +4,7 @@ Sentiment Analyzer
 The goal of this project is to perform sentiment analysis on textual data that
 people generally post on websites like social networks and movie review sites.
 At the moment, this project does a sentiment analysis on tweets
-(from twitter.com). It has two modes of operation::
+(from twitter.com). It has two modes of operation
 
   * Offline mode: This mode relies on the discoproject (http://discoproject.org/),
     which is a MapReduce framework written in Erlang and Python and has a cool
