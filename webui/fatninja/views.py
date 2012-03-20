@@ -74,7 +74,6 @@ def index(request):
         if stripped_query.startswith('@'):
             fetcher = Fetcher()
             results = fetcher.userfetch(stripped_query[1:], start_page=1, num_pages=16)
-            no_from_user = True
         else:
             fetcher = Fetcher()
             results = fetcher.fetch(stripped_query, start_page=1, num_pages=10)
@@ -103,7 +102,7 @@ def index(request):
                 predicted_tweets[tweet_id] = {
                     'text': tweet['text'],
                     'date': created_at,
-                    'user': tweet.get('from_user', None)
+                    'user': tweet.get('from_user', stripped_query[1:])
                     }
 
                 # If not go check the database
@@ -148,7 +147,7 @@ def index(request):
             cache.add(tweet_id, {
                 'text': tweet['text'],
                 'date': tweet['created_at'],
-                'user': tweet['from_user'],
+                'user': tweet.get('from_user', stripped_query[1:]),
                 'sentiment': sentiment
                 })
 
