@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 #
 # Copyright 2012 Ajay Narayan, Madhusudan C.S., Shobhit N.S.
 #
@@ -95,7 +94,6 @@ def parse_training_corpus(corpus_file):
     reader.next()
 
     classification = []
-    #date_time = []
     tweets = []
     #retweets = []
     #favorited = []
