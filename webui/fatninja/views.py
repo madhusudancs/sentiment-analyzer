@@ -29,7 +29,7 @@ import urllib
 
 import numpy
 
-#from django.core.cache import cache
+from django.core.cache import cache
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse
 from django.shortcuts import redirect
@@ -90,7 +90,7 @@ def index(request):
         #for result in results:
         for tweet in results:
             tweet_id = tweet['id']
-            #cached_tweet = cache.get(tweet_id)
+            cached_tweet = cache.get(tweet_id)
 
             # Check if tweet is cached.
             cached_tweet = None
@@ -112,7 +112,7 @@ def index(request):
                     database_tweet.sentiment in [-1, 0, 1]):
                     predicted_tweets[tweet_id]['sentiment'] = \
                         database_tweet.sentiment
-                    #cache.add(tweet_id, predicted_tweets[tweet_id])
+                    cache.add(tweet_id, predicted_tweets[tweet_id])
                 else:
                     # If it is not even in the database, you are screwed :P
                     # Go classify it.                       
@@ -145,12 +145,12 @@ def index(request):
             tweet['sentiment'] = sentiment
             Tweet(**tweet).save()
 
-            #cache.add(tweet_id, {
-            #    'text': tweet['text'],
-            #    'date': tweet['created_at'],
-            #    'user': tweet['from_user'],
-            #    'sentiment': sentiment
-            #    })
+            cache.add(tweet_id, {
+                'text': tweet['text'],
+                'date': tweet['created_at'],
+                'user': tweet['from_user'],
+                'sentiment': sentiment
+                })
 
         context['tweets_classified'] = len(predicted_tweets)
         context['positive_count'] = 0
