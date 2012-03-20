@@ -76,7 +76,7 @@
             <div class="row">
             <p><strong>Tweets Classified : {{ tweets_classified }}</strong></p>
             <p><strong>Positve Tweets : {{ positive_count }}</strong></p>
-            <div class="progress progress-success">
+            <div class="progress progress-info">
              <div class="bar" style="width:{% widthratio  positive_count tweets_classified 100 %}%;"></div>
             </div>
             <p><strong> Negative Tweets : {{ negative_count }}</strong></p>
@@ -118,6 +118,7 @@
         <section id="gridSystem">
           <!-- Example row of columns -->
           {% for tweet_id, tweet in classified_information.items %}
+               {% if tweet.sentiment != 0 %} 
                <div class="row show-grid">
                 <div class="span12">
                   <div class="alert alert{% if tweet.sentiment == -1 %}-error{% else %}{% if tweet.sentiment == 1 %}-success{% endif %}{% endif %}"
@@ -126,14 +127,30 @@
                   </div>
                 </div>
               </div> 
+              {% endif %}
           {% endfor %}
         </section>
-      {% endif %}
+        <section id="gridSystem">
+          <!-- Example row of columns -->
+          {% for tweet_id, tweet in classified_information.items %}
+               {% if tweet.sentiment == 0 %} 
+               <div class="row show-grid">
+                <div class="span12">
+                  <div class="alert alert{% if tweet.sentiment == -1 %}-error{% else %}{% if tweet.sentiment == 1 %}-success{% endif %}{% endif %}"
+                    <p><strong><a href="https://twitter.com/#!/{{ user }}">{{ tweet.user }}</a></strong> {{ tweet.text }}</p>
+                    {{ tweet.date|timesince }} ago
+                  </div>
+                </div>
+              </div> 
+              {% endif %}
+          {% endfor %}
+        </section>
+             {% endif %} 
       <section id = lines> <hr> </section>
       <section id = footer>
        <div>
         <p>University of California, Irvine &copy; Copyright 2012 Ajay Narayan, Madhusudan C.S., Shobhit N.S.</p>
-       <div> 
+       </div> 
       </section>
 
     </div> <!-- /container -->
