@@ -64,7 +64,7 @@ class Trainer(object):
         corpus_file = open(os.path.join(datasettings.DATA_DIRECTORY,
                                         'full-corpus.csv'))
 
-        classification = parse_training_corpus(corpus_file)
+        classification, tweets = parse_training_corpus(corpus_file)
 
         reviews_positive = parse_imdb_corpus(
             os.path.join(datasettings.DATA_DIRECTORY, 'positive'))
@@ -80,9 +80,9 @@ class Trainer(object):
         self.data = tweets
         self.classification = classification
 
-        self.date_time = date_time
-        self.retweet = retweets
-        self.favorited = favorited
+        #self.date_time = date_time
+        #self.retweet = retweets
+        #self.favorited = favorited
 
     def initial_fit(self):
         """Initializes the vectorizer by doing a fit and then a transform.

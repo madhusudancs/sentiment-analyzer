@@ -34,7 +34,7 @@ class Fetcher(object):
             results = json.loads(r.text)
             if results:
                 self.thread_lock.acquire()
-                self.data.append(results)
+                self.data.extend(results['results'])
                 self.thread_lock.release()
         except requests.ConnectionError:
             pass
@@ -61,6 +61,35 @@ class Fetcher(object):
 
         return self.data
 
+
+    def userworker(self, query, page):
+        try:
+            r = requests.get('https://api.twitter.com/1/statuses/user_timeline.json', 
+                             params={'include_entities' : True, 'include_rts' : True, 
+                                     'screen_name' : query, 'page' : page, 'count' : 200})
+            if r.status_code == 200:
+                results = json.loads(r.text)
+                if results:
+                    self.thread_lock.acquire()
+                    self.data.extend(results)
+                    self.thread_lock.release()
+        
+        except requests.ConnectionError:
+            pass
+
+    def userfetch(self, query, start_page=1, num_pages=16):
+        threads = []
+        for page in range(start_page, num_pages+1):
+            t = threading.Thread(target=self.userworker, args=(query, page))
+            threads.append(t)
+            t.start()
+
+        while threading.active_count() > 3:
+            print threading.active_count()
+            time.sleep(1)
+ 
+        return self.data 
+             
 def main():
     threads = []
     for i in range(100):

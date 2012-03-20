@@ -29,7 +29,7 @@ import urllib
 
 import numpy
 
-from django.core.cache import cache
+#from django.core.cache import cache
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse
 from django.shortcuts import redirect
@@ -70,8 +70,14 @@ def index(request):
 
         context['query'] = query
 
-        fetcher = Fetcher()
-        results = fetcher.fetch(query, start_page=1, num_pages=10)
+        stripped_query = query.strip()
+        if stripped_query.startswith('@'):
+            fetcher = Fetcher()
+            results = fetcher.userfetch(stripped_query[1:], start_page=1, num_pages=16)
+            no_from_user = True
+        else:
+            fetcher = Fetcher()
+            results = fetcher.fetch(stripped_query, start_page=1, num_pages=10)
 
         tweets_to_classify = []
 
@@ -81,55 +87,55 @@ def index(request):
 
         data_to_db = {}
 
-        for result in results:
-            for tweet in result['results']:
-                tweet_id = tweet['id']
-                cached_tweet = cache.get(tweet_id)
+        #for result in results:
+        for tweet in results:
+            tweet_id = tweet['id']
+            #cached_tweet = cache.get(tweet_id)
 
-                # Check if tweet is cached.
-                if cached_tweet:
-                    predicted_tweets[tweet_id] = cached_tweet
+            # Check if tweet is cached.
+            cached_tweet = None
+            if cached_tweet:
+                predicted_tweets[tweet_id] = cached_tweet
+            else:
+                created_at = datetime.datetime(
+                        *email.utils.parsedate_tz(tweet['created_at'])[:7])
+
+                predicted_tweets[tweet_id] = {
+                    'text': tweet['text'],
+                    'date': created_at,
+                    'user': tweet.get('from_user', None)
+                    }
+
+                # If not go check the database
+                database_tweet = Tweet.objects.with_id(str(tweet_id))
+                if (database_tweet and
+                    database_tweet.sentiment in [-1, 0, 1]):
+                    predicted_tweets[tweet_id]['sentiment'] = \
+                        database_tweet.sentiment
+                    #cache.add(tweet_id, predicted_tweets[tweet_id])
                 else:
-                    created_at = datetime.datetime(
-                            *email.utils.parsedate_tz(tweet['created_at'])[:7])
+                    # If it is not even in the database, you are screwed :P
+                    # Go classify it.                       
+                    tweets_to_classify_id_map[len(tweets_to_classify)] = \
+                        tweet['id']
+                    tweets_to_classify.append(tweet['text'])
 
-                    predicted_tweets[tweet_id] = {
-                        'text': tweet['text'],
-                        'date': created_at,
-                        'user': tweet['from_user']
-                        }
+                    tweet['created_at'] = created_at
+                    data_to_db[tweet_id] = tweet
 
-                    # If not go check the database
-                    database_tweet = Tweet.objects.with_id(str(tweet_id))
-                    if (database_tweet and
-                        database_tweet.sentiment in [-1, 0, 1]):
-                        predicted_tweets[tweet_id]['sentiment'] = \
-                            database_tweet.sentiment
-                        cache.add(tweet_id, predicted_tweets[tweet_id])
-                    else:
-                        # If it is not even in the database, you are screwed :P
-                        # Go classify it.                       
-                        tweets_to_classify_id_map[len(tweets_to_classify)] = \
-                            tweet['id']
-                        tweets_to_classify.append(tweet['text'])
-
-                        tweet['created_at'] = created_at
-                        data_to_db[tweet_id] = tweet
-
-
-        classifiers_file = open(os.path.join(datasettings.DATA_DIRECTORY,
+        if tweets_to_classify: 
+            classifiers_file = open(os.path.join(datasettings.DATA_DIRECTORY,
                                             'classifiers.pickle'))
-        classifiers = cPickle.load(classifiers_file)
-        vectorizer_file = open(os.path.join(datasettings.DATA_DIRECTORY,
+            classifiers = cPickle.load(classifiers_file)
+            vectorizer_file = open(os.path.join(datasettings.DATA_DIRECTORY,
                                             'vectorizer.pickle'))
-        vectorizer = cPickle.load(vectorizer_file)
-        tweets_vector = vectorizer.transform(tweets_to_classify)
-        classified = list(classifiers[1].predict(tweets_vector))
+            vectorizer = cPickle.load(vectorizer_file)
+        
+            tweets_vector = vectorizer.transform(tweets_to_classify)
+            classified = list(classifiers[2].predict(tweets_vector))
+        else:
+            classified = []
 
-        context['tweets_classified'] = len(classified)
-        context['positive_count'] = classified.count(1)
-        context['negative_count'] = classified.count(-1)
-        context['neutral_count'] = classified.count(0)
 
         for pointer, tweet_id in tweets_to_classify_id_map.items():
             sentiment = classified[pointer]
@@ -139,14 +145,26 @@ def index(request):
             tweet['sentiment'] = sentiment
             Tweet(**tweet).save()
 
-            cache.add(tweet_id, {
-                'text': tweet['text'],
-                'date': tweet['created_at'],
-                'user': tweet['from_user'],
-                'sentiment': sentiment
-                })
+            #cache.add(tweet_id, {
+            #    'text': tweet['text'],
+            #    'date': tweet['created_at'],
+            #    'user': tweet['from_user'],
+            #    'sentiment': sentiment
+            #    })
 
-        context['classified_information'] = predicted_tweets
+        context['tweets_classified'] = len(predicted_tweets)
+        context['positive_count'] = 0
+        context['negative_count'] = 0
+        context['neutral_count'] = 0
+        for key, value in predicted_tweets.iteritems():
+            if value['sentiment'] == 1:
+                context['positive_count'] += 1
+            elif value['sentiment'] == 0:
+                context['neutral_count'] += 1
+            else:
+                context['negative_count'] += 1
+
+	context['classified_information'] = predicted_tweets
         end = time.time()
         print end - start
 

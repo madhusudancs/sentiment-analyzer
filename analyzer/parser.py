@@ -95,18 +95,18 @@ def parse_training_corpus(corpus_file):
     reader.next()
 
     classification = []
-    date_time = []
+    #date_time = []
     tweets = []
-    retweets = []
-    favorited = []
+    #retweets = []
+    #favorited = []
 
     for row in reader:
         classification.append(row[1])
-        date_time.append(datetime.datetime(
-            *utils.parsedate_tz(row[3])[:7]))
+        #date_time.append(datetime.datetime(
+        #    *utils.parsedate_tz(row[3])[:7]))
         tweets.append(row[4])
 
-    return classification, date_time, tweets, retweets, favorited
+    return classification, tweets
 
 
 def parse_imdb_corpus(directory):
