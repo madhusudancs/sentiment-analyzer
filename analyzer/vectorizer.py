@@ -19,7 +19,6 @@
 import numpy
 import scipy
 
-from disco.core import result_iterator
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 
@@ -51,6 +50,8 @@ class Vectorizer(TfidfVectorizer):
         Args:
             job: The disco MapReduce job.
         """
+        from disco.core import result_iterator
+
         self.docs_to_row_num_map = {}
         self.row_num_to_docs_map = {}
 

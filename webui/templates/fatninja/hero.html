@@ -30,7 +30,6 @@
   </head>
 
   <body>
-
     <div class="navbar navbar-fixed-top">
       <div class="navbar-inner">
         <div class="container">
@@ -65,11 +64,8 @@
           {% csrf_token %}
           <!-- Main hero unit for a primary marketing message or call to action -->
             <h2 align = Center>Twitter Sentiment Analysis</h2>
-            <p>
-
-            </p>
+            <p> <br><br></p>
             <p align = Center><input type="search" class="span3" placeholder="Search" name="query" id="search" autofocus /> </p>
-            <!-- <p align = Center><input type="text" name="query" rows="1" cols="10" autofocus /></p> -->
             <p><button type="submit" class="btn btn-primary btn-large pull-right">Search &raquo;</button></p>
           </form>
         </div>
@@ -99,7 +95,8 @@
         <section id="gridSystem">
           <!-- Example row of columns -->
           {% for tweet_id, tweet in classified_information.items %}
-              <div class="row show-grid">
+              <div id="jTweetsAnywhereEndlessScrollingSample">
+               <div class="row show-grid">
                 <div class="span12">
                   <div class="alert alert{% if tweet.sentiment == -1 %}-error{% else %}{% if tweet.sentiment == 1 %}-success{% endif %}{% endif %}"
                     <p><strong><a href="https://twitter.com/#!/{{ user }}">{{ tweet.user }}</a></strong> {{ tweet.text }}</p>
@@ -107,6 +104,7 @@
                   </div>
                 </div>
               </div>
+             </div> 
           {% endfor %}
         </section>
       {% endif %}
@@ -118,10 +116,34 @@
       </section>
 
     </div> <!-- /container -->
-
+    <script type="text/javascript" src="/assets/js/jquery.jtweetsanywhere-1.3.1.js">
+     $('#jTweetsAnywhereEndlessScrollingSample').jTweetsAnywhere
+     (
+      {
+        count: 20,
+        showTweetFeed:
+        {
+            showProfileImages: true,
+            showUserScreenNames: true,
+            paging: 
+            {
+                mode: 'endless-scroll'
+            }
+        }
+        onDataRequestHandler: function(stats) 
+        {
+            if (stats.dataRequestCount) 
+            {
+                return true;
+            }
+        }
+     } 
+    );
+    </script>
     <!-- Le javascript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
+ 
     <script src="/assets/js/jquery.js"></script>
     <script src="/assets/js/bootstrap-transition.js"></script>
     <script src="/assets/js/bootstrap-alert.js"></script>
