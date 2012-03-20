@@ -76,7 +76,7 @@
             <div class="row">
             <p><strong>Tweets Classified : {{ tweets_classified }}</strong></p>
             <p><strong>Positve Tweets : {{ positive_count }}</strong></p>
-            <div class="progress progress-info">
+            <div class="progress progress-success">
              <div class="bar" style="width:{% widthratio  positive_count tweets_classified 100 %}%;"></div>
             </div>
             <p><strong> Negative Tweets : {{ negative_count }}</strong></p>
@@ -105,7 +105,8 @@
 
                 var options = 
                 {
-                  title: 'Tweet Classification Chart'
+                  title: 'Tweet Classification Chart',
+                  colors: ['green', 'red', 'orange']
                 };
 
                 var chart = new google.visualization.PieChart(document.getElementById('chart_div'));
