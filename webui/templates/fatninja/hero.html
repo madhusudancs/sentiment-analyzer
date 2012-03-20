@@ -122,7 +122,7 @@
                <div class="row show-grid">
                 <div class="span12">
                   <div class="alert alert{% if tweet.sentiment == -1 %}-error{% else %}{% if tweet.sentiment == 1 %}-success{% endif %}{% endif %}"
-                    <p><strong><a href="https://twitter.com/#!/{{ user }}">{{ tweet.user }}</a></strong> {{ tweet.text }}</p>
+                    <p>{% if tweet.user %}<strong><a href="/?q=@{{ tweet.user }}">{{ tweet.user }}</a></strong>{% endif %} {{ tweet.text }}</p>
                     {{ tweet.date|timesince }} ago
                   </div>
                 </div>
@@ -137,7 +137,7 @@
                <div class="row show-grid">
                 <div class="span12">
                   <div class="alert alert{% if tweet.sentiment == -1 %}-error{% else %}{% if tweet.sentiment == 1 %}-success{% endif %}{% endif %}"
-                    <p><strong><a href="https://twitter.com/#!/{{ user }}">{{ tweet.user }}</a></strong> {{ tweet.text }}</p>
+                    <p>{% if tweet.user %}<strong><a href="/?q=@{{ tweet.user }}">{{ tweet.user }}</a>{% endif %}</strong> {{ tweet.text }}</p>
                     {{ tweet.date|timesince }} ago
                   </div>
                 </div>
