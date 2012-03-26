@@ -19,7 +19,6 @@
 """
 
 
-import collections
 import cPickle
 import datetime
 import email
@@ -36,6 +35,7 @@ from django.shortcuts import redirect
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.template import loader
+from django.utils.datastructures import SortedDict
 
 import datasettings
 
@@ -80,7 +80,7 @@ def index(request):
 
         tweets_to_classify = []
 
-        predicted_tweets = collections.OrderedDict()
+        predicted_tweets = SortedDict()
 
         tweets_to_classify_id_map = {}
 
