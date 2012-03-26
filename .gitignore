@@ -24,3 +24,4 @@
 profiling-data/
 webui/local.py
 *.pickle
+*.wsgi
