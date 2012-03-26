@@ -63,6 +63,7 @@ def index(request):
         get_data = request.GET
         query = get_data.get('q')
         if not query:
+            context['no_header_search_box'] = True
             return render_to_response(
                 'fatninja/home.html', RequestContext(request, context))
 
