@@ -23,7 +23,6 @@ import cPickle
 import datetime
 import email
 import os
-import time
 import urllib
 
 import numpy
@@ -61,7 +60,6 @@ def index(request):
             return redirect('%s?%s' % (reverse('fatninja.views.index'),
                                        urllib.urlencode({'q': query})))
     elif request.method == 'GET':
-        start = time.time()
         get_data = request.GET
         query = get_data.get('q')
         if not query:
@@ -164,8 +162,6 @@ def index(request):
                 context['negative_count'] += 1
 
 	context['classified_information'] = predicted_tweets
-        end = time.time()
-        print end - start
 
     return render_to_response(
         'fatninja/hero.html', RequestContext(request, context))

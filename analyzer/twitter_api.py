@@ -56,7 +56,6 @@ class Fetcher(object):
             t.start()
 
         while threading.active_count() > 3:
-            print threading.active_count()
             time.sleep(1)
 
         return self.data
@@ -67,7 +66,6 @@ class Fetcher(object):
             r = requests.get('https://api.twitter.com/1/statuses/user_timeline.json', 
                              params={'include_entities' : True, 'include_rts' : True, 
                                      'screen_name' : query, 'page' : page, 'count' : 200})
-            print "User Fectch status code", r.status_code
             if r.status_code == 200:
                 results = json.loads(r.text)
                 if results:
@@ -86,7 +84,6 @@ class Fetcher(object):
             t.start()
 
         while threading.active_count() > 3:
-            print threading.active_count()
             time.sleep(1)
  
         return self.data 
