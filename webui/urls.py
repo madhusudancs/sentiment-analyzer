@@ -23,6 +23,7 @@ from django.conf.urls.defaults import include
 from django.conf.urls.defaults import patterns
 from django.conf.urls.defaults import url
 from django.contrib import admin
+from django.views.generic.simple import direct_to_template
 
 
 admin.autodiscover()
@@ -37,6 +38,7 @@ urlpatterns = patterns('',
 
     # Uncomment the next line to enable the admin:
     url(r'^$','fatninja.views.index'),
+    url(r'^about$', direct_to_template, {'template': 'fatninja/about.html' }),
     url(r'^admin/', include(admin.site.urls)),
     (r'^assets/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
 )
