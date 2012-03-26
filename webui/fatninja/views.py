@@ -162,7 +162,7 @@ def index(request):
             else:
                 context['negative_count'] += 1
 
-	context['classified_information'] = predicted_tweets
+        context['classified_information'] = predicted_tweets
 
     return render_to_response(
         'fatninja/home.html', RequestContext(request, context))
