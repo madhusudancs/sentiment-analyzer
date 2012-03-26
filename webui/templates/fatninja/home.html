@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block javascript %}
+    {{ block.super }}
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript">
+        google.load("visualization", "1", {packages:["corechart"]});
+        google.setOnLoadCallback(drawChart);
+        function drawChart() 
+        {
+            var data = new google.visualization.DataTable();
+            data.addColumn('string', 'Tweet Classification');
+            data.addColumn('number', 'Count');
+            data.addRows([
+                ['Positive', {{ positive_count }}],
+                ['Negative', {{ negative_count }}],
+                ['Neutral', {{ neutral_count }}]
+            ]);
+
+            var options = {
+                title: 'Tweet Classification Chart',
+                colors: ['green', 'red', 'orange']
+            };
+
+            var chart = new google.visualization.PieChart(document.getElementById('chart_div'));
+            chart.draw(data, options);
+        }
+    </script>
+{% endblock javascript %}
+
+
+{% block content %}
+    {% if not classified_information %}
+        <form action="" method="POST">
+            {% csrf_token %}
+            <!-- Main hero unit for a primary marketing message or call to action -->
+            <h2 align = Center>Twitter Sentiment Analysis</h2>
+            <p> <br><br></p>
+            <p align = Center><input type="search" class="span3" placeholder="Search / @username" name="query" id="search" autofocus /> </p>
+            <p><button type="submit" class="btn btn-primary btn-large pull-right">Search &raquo;</button></p>
+        </form>  
+    {% else %}
+        <h2 align = Center>Twitter Sentiment Analysis</h2>
+        <div class="row">
+        <p><strong>Tweets Classified : {{ tweets_classified }}</strong></p>
+        <p><strong>Positve Tweets : {{ positive_count }}</strong></p>
+        <div class="progress progress-success">
+            <div class="bar" style="width:{% widthratio  positive_count tweets_classified 100 %}%;"></div>
+        </div>
+        <p><strong> Negative Tweets : {{ negative_count }}</strong></p>
+        <div class="progress progress-danger">
+            <div class="bar" style="width:{% widthratio  negative_count tweets_classified 100 %}%"> </div>
+        </div>
+        <p><strong>Neutral Tweets : {{ neutral_count }}</strong></p>
+        <div class="progress progress-warning">
+            <div class="bar" style="width:{% widthratio  neutral_count tweets_classified 100 %}%"> </div>
+        </div>
+        </div> 
+
+        <!-- Holder for Google charts -->
+        <div id="chart_div" backgroundColor = '#f5f5f5'></div> 
+        </div>
+
+
+        <section id="gridSystem">
+            {% for tweet_id, tweet in classified_information.items %}
+                {% if tweet.sentiment != 0 %} 
+                    <div class="row show-grid">
+                        <div class="span12">
+                            <div class="alert alert{% if tweet.sentiment == -1 %}-error{% else %}{% if tweet.sentiment == 1 %}-success{% endif %}{% endif %}"
+                                <p>{% if tweet.user %}<strong><a href="/?q=@{{ tweet.user }}">{{ tweet.user }}</a></strong>{% endif %} {{ tweet.text }}</p>
+                                {{ tweet.date|timesince }} ago
+                            </div>
+                        </div>
+                    </div> 
+                {% endif %}
+            {% endfor %}
+        </section>
+
+        <section id="gridSystem">
+            {% for tweet_id, tweet in classified_information.items %}
+                {% if tweet.sentiment == 0 %} 
+                    <div class="row show-grid">
+                        <div class="span12">
+                            <div class="alert alert{% if tweet.sentiment == -1 %}-error{% else %}{% if tweet.sentiment == 1 %}-success{% endif %}{% endif %}"
+                                <p>{% if tweet.user %}<strong><a href="/?q=@{{ tweet.user }}">{{ tweet.user }}</a>{% endif %}</strong> {{ tweet.text }}</p>
+                                {{ tweet.date|timesince }} ago
+                            </div>
+                        </div>
+                    </div> 
+                {% endif %}
+            {% endfor %}
+        </section>
+    {% endif %} 
+{% block content %}
+

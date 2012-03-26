@@ -64,7 +64,7 @@ def index(request):
         query = get_data.get('q')
         if not query:
             return render_to_response(
-                'fatninja/hero.html', RequestContext(request, context))
+                'fatninja/home.html', RequestContext(request, context))
 
         context['query'] = query
 
@@ -164,5 +164,5 @@ def index(request):
 	context['classified_information'] = predicted_tweets
 
     return render_to_response(
-        'fatninja/hero.html', RequestContext(request, context))
+        'fatninja/home.html', RequestContext(request, context))
 
